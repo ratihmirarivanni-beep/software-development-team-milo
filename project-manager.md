@@ -1,8 +1,8 @@
-# Project Manager
+# Project Manager  
 
-Nama: Ratih Mira Rivanni
+Nama: Ratih Mira Rivanni  
 
-Peran:
+Peran:  
 Sebagai Project Manager saya bertugas membuat repository GitHub dan menambahkan collaborator untuk mendukung kolaborasi tim.
 
 Kontribusi:
