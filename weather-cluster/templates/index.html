@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Clustering App</title>
+    <link rel="stylesheet" href="../static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="logo">WeatherApp</div>
+
+        <!-- MENU NAV -->
+        <ul id="nav-menu">
+            <li><a href="#beranda">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#manual">Manual</a></li>
+        </ul>
+
+        <!-- BURGER MENU (INI TARUH DI SINI) -->
+        <div class="menu-toggle" onclick="toggleMenu()">
+            ☰
+        </div>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero" id="beranda" style="background-image: url('../static/sky.jpg');">
+
+        <!-- HUJAN DI HOME SAJA -->
+        <div class="rain-container">
+        </div>
+
+        <div class="hero-content">
+            <span class="badge-ml">Machine Learning</span>
+
+            <h1 class="fade-in">Prediksi Cuaca Berbasis Clustering</h1>
+            <p class="fade-in delay1"><b>Cari kota untuk melihat kondisi cuaca berdasarkan data cuaca saat ini</b></p>
+
+        <div class="search-box fade-in delay2">
+            <input type="text" placeholder="Cari kota..." id="cityInput">
+            <div class="button-group-search">
+                <button class="btn-search" onclick="searchCity()">Cari</button>
+                <button class="btn-reset" onclick="resetSearchInput()">Batal</button>
+            </div>
+        </div>
+
+        </div>
+    </section>
+
+
+    
+    <script src="../static/js/script.js"></script>
+
+</body>
+
+</html>
