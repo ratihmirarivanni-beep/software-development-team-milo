@@ -127,6 +127,84 @@
         </div>
     </section>
 
+        <!-- PREDIKSI MANUAL -->
+    <section id="manual" class="section-prediksi">
+        <div class="manual-wrapper">
+
+            <!-- KIRI: Ilustrasi -->
+            <div class="manual-left">
+            <img src="../static/sunny.jpg" alt="Ilustrasi Cuaca" class="weather-illustration">
+            </div>    
+
+            <!-- KANAN: Form Input -->
+            <div class="manual-right">
+                <br><h2>Prediksi Cuaca Manual</h2><br>
+                <div class="input-group">
+                    <input id="m_temp" type="number" placeholder="Suhu (°C)">
+                    <input id="m_rain" type="number" placeholder="Curah Hujan (mm)">
+                    <input id="m_wind" type="number" placeholder="Kecepatan Angin (kph)">
+                </div>
+                <div class="button-group">
+                    <button onclick="predictManual()" class="btn-predict">Prediksi Sekarang</button>
+                    <button onclick="resetManualInput()" class="btn-reset">Batal</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            
+            <div class="footer-col">
+                <h4>ANGGOTA TIM</h4>
+                
+                <div class="team-list-footer">
+                    
+                    <div class="member-item">
+                        <div class="photo-small avatar">R</div>
+                        <div class="team-info">
+                            <p class="name-npm">Ratih Mira Rivanni</p>
+                            <p class="npm-number">2313020048</p>
+                        </div>
+                    </div>
+                    
+                    <div class="member-item">
+                        <div class="photo-small avatar">L</div>
+                        <div class="team-info">
+                            <p class="name-npm">Lolita Dwi Febrianti Salsabila</p>
+                            <p class="npm-number">2313020116</p>
+                        </div>
+                    </div>
+                    
+                    <div class="member-item">
+                        <div class="photo-small avatar">I</div>
+                        <div class="team-info">
+                            <p class="name-npm">Indana Zulfa Nurul Lathifah</p>
+                            <p class="npm-number">2313020123</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>WEATHERCLUSTER PROJECT</h4>
+                <p style="color: #cccccc; line-height: 1.6; margin-bottom: 25px;">
+                    Sistem prediksi cuaca berbasis <b>Unsupervised Learning</b> yang dikembangkan menggunakan algoritma <b>K-Means</b>. Tujuannya adalah mengelompokkan data cuaca untuk memberikan interpretasi kondisi yang akurat.
+                </p>
+                
+                <ul style="list-style: none; padding: 0;">
+                    <li><p style="color: #ffffff; margin-bottom: 8px;"><i class="icon fas fa-cogs" style="margin-right: 10px; color: #007bff;"></i>Mata Kuliah: Software Development</p></li>
+                    <li><p style="color: #ffffff; margin-bottom: 8px;"><i class="icon fas fa-graduation-cap" style="margin-right: 10px; color: #007bff;"></i>Kelas 3C | Kelompok 4</p></li>
+                </ul>
+            </div>
+            
+        </div>
+    </footer>
+
     
     <script src="../static/js/script.js"></script>
 
