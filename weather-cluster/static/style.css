@@ -6,6 +6,88 @@
   --border-soft: #e5e7eb; 
 }
 
+/* -------- BUBLE PARTICLE ----------*/
+.particle {
+    position: fixed;
+    bottom: -10px;
+    width: 6px;
+    height: 6px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 50%;
+    animation: floatUp linear infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes floatUp {
+    to {
+        transform: translateY(-110vh);
+        opacity: 0;
+    }
+}
+
+/* -------- SCROOL REVEAL -------*/
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease;
+}
+
+.reveal.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+.sparkle {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 9999;
+
+  background: linear-gradient(
+    45deg,
+    #9fdcff,
+    #e6f6ff,
+    #7fc8ff
+  );
+
+  clip-path: polygon(
+    50% 0%,
+    62% 38%,
+    100% 50%,
+    62% 62%,
+    50% 100%,
+    38% 62%,
+    0% 50%,
+    38% 38%
+  );
+
+  box-shadow:
+    0 0 14px rgba(120, 190, 255, 1),
+    0 0 28px rgba(90, 170, 255, 0.9),
+    0 0 42px rgba(70, 150, 255, 0.6),
+    0 0 58px rgba(60, 140, 255, 0.35);
+
+  animation: glitterPop 0.8s ease-out forwards;
+}
+
+@keyframes glitterPop {
+  0% {
+    transform: scale(0.5) rotate(0deg);
+    opacity: 0;
+  }
+  40% {
+    transform: scale(1.4) rotate(160deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.1) rotate(360deg);
+    opacity: 0;
+  }
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -365,7 +447,7 @@ button:active {
     align-items: center; 
     box-sizing: border-box;
     gap: 50px;
-    padding: 40px 0;
+    padding: 40px 20px;
     height: 400px;
     margin-bottom: 40px;
     max-width: 1400px;
@@ -431,6 +513,7 @@ button:active {
     width: 100%;
     max-width: 1400px;
     margin: 50px auto;
+    overflow: visible;
 }
 
 .slider-track {
@@ -442,23 +525,40 @@ button:active {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: transparent;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(6px);
     border: none;
-    font-size: 24px;
+    font-size: 28px;
     padding: 8px 12px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     cursor: pointer;
     z-index: 10;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
 }
 
-.slider-btn.next { 
-    right: -10px; 
+.slider-viewport {
+    overflow: hidden;
 }
 
+.slider-btn.prev {
+    left: -60px;
+}
+
+.slider-btn.next {
+    right: -60px;
+}
+
+.slider-btn:hover {
+    transform: translateY(-50%) scale(1.15);
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+}
 
 @media (max-width: 992px) {
 
-    /* FEATURE / SLIDER */
     .feature-item {
         flex-direction: column;
         height: auto;
@@ -484,18 +584,23 @@ button:active {
     .feature-content p {
         font-size: 0.95rem;
     }
+        .slider-btn.prev {
+        left: 10px;
+    }
+
+    .slider-btn.next {
+        right: 10px;
+    }
 }
 
 
 /* Mobile */
 @media (max-width: 600px) {
 
-    /* JUDUL */
     .slider-container h2 {
         font-size: 1.3rem;
     }
 
-    /* FEATURE */
     .feature-item {
         padding: 15px;
         gap: 15px;
@@ -517,9 +622,17 @@ button:active {
         font-size: 0.85rem;
     }
 
-    /* BUTTON SLIDER */
     .slider-btn {
-        font-size: 18px;
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
+
+    .slider-btn.prev {
+        left: 5px;
+    }
+
+    .slider-btn.next {
         right: 5px;
     }
 }
@@ -538,10 +651,15 @@ button:active {
     .feature-img {
         max-width: 180px;
     }
+    .slider-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
 }
 
 
-/* -------- Manual Input --------- */
+/* -------- MANUAL INPUT --------- */
 /* -------- INPUT ------------ */
 .input-group input {
     width: 100%;
@@ -700,6 +818,10 @@ button:active {
     }
 }
 
+/* ----------- HASIL MANUAL INPUT --------- */
+
+
+
 
 /* ----------- FOOTER --------- */
 .main-footer {
@@ -830,3 +952,5 @@ button:active {
         width: 100%;
     }
 }
+
+
