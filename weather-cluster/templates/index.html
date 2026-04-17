@@ -23,7 +23,7 @@
             <li><a href="#manual">Manual</a></li>
         </ul>
 
-        <!-- BURGER MENU (INI TARUH DI SINI) -->
+        <!-- BURGER MENU-->
         <div class="menu-toggle" onclick="toggleMenu()">
             ☰
         </div>
@@ -69,15 +69,15 @@
                         <div class="feature-content">
                             <h3>Clustering dengan K-Means</h3>
                             <p>
-                            Aplikasi ini menggunakan <b>algoritma K-Means</b> untuk mengelompokkan data cuaca 
-                            berdasarkan kemiripan nilai seperti suhu, curah hujan, dan kecepatan angin. 
-                            Dengan metode ini, sistem dapat mengenali pola cuaca secara otomatis dan 
-                            mengelompokkannya ke dalam beberapa kategori kondisi.
+                                Aplikasi ini menggunakan <b>algoritma K-Means</b> untuk mengelompokkan data cuaca 
+                                berdasarkan kemiripan nilai seperti suhu, curah hujan, dan kecepatan angin. 
+                                Dengan metode ini, sistem dapat mengenali pola cuaca secara otomatis dan 
+                                mengelompokkannya ke dalam beberapa kategori kondisi.
                             </p>
                             <ul>
-                            <li>✔️ Mengelompokkan data cuaca berdasarkan kemiripan</li>
-                            <li>✔️ Membantu memahami pola cuaca secara sederhana</li>
-                            <li>✔️ Proses cepat dan efisien</li>
+                                <li>✔️ Mengelompokkan data cuaca berdasarkan kemiripan</li>
+                                <li>✔️ Membantu memahami pola cuaca secara sederhana</li>
+                                <li>✔️ Proses cepat dan efisien</li>
                             </ul>
                         </div>
                     </div>
@@ -90,14 +90,14 @@
                         <div class="feature-content">
                             <h3>Data Cuaca Real-time</h3>
                             <p>
-                            Aplikasi memanfaatkan data cuaca dari API serta input manual pengguna 
-                            untuk melakukan proses clustering. Data yang digunakan meliputi suhu, 
-                            curah hujan, dan kecepatan angin sebagai parameter utama dalam analisis.
+                                Aplikasi memanfaatkan data cuaca dari API serta input manual pengguna 
+                                untuk melakukan proses clustering. Data yang digunakan meliputi suhu, 
+                                curah hujan, dan kecepatan angin sebagai parameter utama dalam analisis.
                             </p>
                             <ul>
-                            <li>✔️ Data suhu (°C), curah hujan (mm), dan angin (kph)</li>
-                            <li>✔️ Input manual untuk simulasi kondisi cuaca</li>
-                            <li>✔️ Data digunakan langsung untuk proses clustering</li>
+                                <li>✔️ Data suhu (°C), curah hujan (mm), dan angin (kph)</li>
+                                <li>✔️ Input manual untuk simulasi kondisi cuaca</li>
+                                <li>✔️ Data digunakan langsung untuk proses clustering</li>
                             </ul>
                         </div>
                     </div>
@@ -110,14 +110,14 @@
                         <div class="feature-content">
                             <h3>Hasil Clustering Cuaca</h3>
                             <p>
-                            Hasil dari K-Means ditampilkan dalam bentuk cluster yang merepresentasikan 
-                            kondisi cuaca tertentu, seperti cerah, hujan, atau berangin. 
-                            Setiap cluster membantu pengguna memahami karakteristik cuaca dengan lebih mudah.
+                                Hasil dari K-Means ditampilkan dalam bentuk cluster yang merepresentasikan 
+                                kondisi cuaca tertentu, seperti cerah, hujan, atau berangin. 
+                                Setiap cluster membantu pengguna memahami karakteristik cuaca dengan lebih mudah.
                             </p>
                             <ul>
-                            <li>✔️ Menampilkan kategori cuaca berdasarkan cluster</li>
-                            <li>✔️ Interpretasi hasil yang mudah dipahami</li>
-                            <li>✔️ Membantu analisis kondisi cuaca secara cepat</li>
+                                <li>✔️ Menampilkan kategori cuaca berdasarkan cluster</li>
+                                <li>✔️ Interpretasi hasil yang mudah dipahami</li>
+                                <li>✔️ Membantu analisis kondisi cuaca secara cepat</li>
                             </ul>
                         </div>
                     </div>
@@ -135,7 +135,7 @@
 
             <!-- KIRI: Ilustrasi -->
             <div class="manual-left">
-            <img src="../static/sunny.jpg" alt="Ilustrasi Cuaca" class="weather-illustration">
+                <img src="../static/sunny.jpg" alt="Ilustrasi Cuaca" class="weather-illustration">
             </div>    
 
             <!-- KANAN: Form Input -->
@@ -154,6 +154,49 @@
         </div>
     </section>
 
+    <!-- MODAL HASIL INPUT KOTA -->
+    <div id="modalHasil" class="modal">
+        <div class="modal-content">
+
+            <span class="close-btn" onclick="closeModal()">✖</span>
+
+            <h2>Hasil Prediksi</h2>
+
+            <p id="kotaHasil">📍 KOTA -</p>
+            <p id="timeNow" class="time-update">⏰ Update: -</p>
+
+            <div class="hasil-top">
+                <div class="cuaca-icon">
+                    <i class="fas fa-cloud-sun"></i>
+                    <h3>24°C</h3>
+                    <p>Cluster <b>CERAH</b></p>
+                </div>
+
+                <div class="box-info">
+                    <span class="icon">🌧️</span>
+                    <div class="text">
+                        <div class="label">Curah Hujan</div>
+                        <div class="value">10 mm</div>
+                    </div>
+                </div>
+
+                <div class="box-info">
+                    <span class="icon">༄</span>
+                    <div class="text">
+                        <div class="label">Angin</div>
+                        <div class="value">0-0.2 m/s</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Prakiraan Cuaca Hari Ini </h3>
+            <p id="timeNow" style="text-align:center; font-size:14px; color:#555;"></p>
+            <canvas id="chartDummy"></canvas>
+            </div>
+
+        </div>
+    </div>
+
 
 
     <!-- FOOTER -->
@@ -168,7 +211,7 @@
                     <div class="member-item">
                         <div class="photo-small avatar">R</div>
                         <div class="team-info">
-                            <p class="name-npm">Ratih Mira Rivanni</p>
+                            <p class="name-npm">Ratih Mira Rivanni - PM</p>
                             <p class="npm-number">2313020048</p>
                         </div>
                     </div>
@@ -176,7 +219,7 @@
                     <div class="member-item">
                         <div class="photo-small avatar">L</div>
                         <div class="team-info">
-                            <p class="name-npm">Lolita Dwi Febrianti Salsabila</p>
+                            <p class="name-npm">Lolita Dwi Febrianti Salsabila  - FE</p>
                             <p class="npm-number">2313020116</p>
                         </div>
                     </div>
@@ -184,7 +227,7 @@
                     <div class="member-item">
                         <div class="photo-small avatar">I</div>
                         <div class="team-info">
-                            <p class="name-npm">Indana Zulfa Nurul Lathifah</p>
+                            <p class="name-npm">Indana Zulfa Nurul Lathifah - BE</p>
                             <p class="npm-number">2313020123</p>
                         </div>
                     </div>
