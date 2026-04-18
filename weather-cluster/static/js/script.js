@@ -19,6 +19,18 @@ function toggleMenu() {
     document.getElementById("nav-menu").classList.toggle("show");
 }
 
+// =======================================
+// ENTER KEY NAVIGATION
+// =======================================
+const inputs = document.querySelectorAll(".input-group input");
+inputs.forEach((input, i) => {
+    input.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            inputs[i + 1]?.focus();
+        }
+    });
+});
 
 // =======================================
 // HASIL INPUT KOTA DUMMY
@@ -240,21 +252,93 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// =======================================
-// ENTER KEY NAVIGATION
-// =======================================
-const inputs = document.querySelectorAll(".input-group input");
-inputs.forEach((input, i) => {
-    input.addEventListener("keydown", e => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            inputs[i + 1]?.focus();
-        }
-    });
-});
+
 
 // =======================================
-/*BUBLE PARTICLE*/
+// HASIL INPUT MANUAL DUMMY
+// =======================================
+
+function showManualResult(data) {
+    // isi data ke modal
+    document.getElementById("tempManual").innerText = data.temp + " °C";
+    document.getElementById("rainManual").innerText = data.rain + " mm";
+    document.getElementById("windManual").innerText = data.wind + " kph";
+
+    document.getElementById("clusterManual").innerText = "Cluster - " + data.cluster;
+
+    // icon sederhana (opsional)
+    const icon = document.getElementById("iconManual");
+
+    if (data.cluster === "Hujan") {
+        icon.className = "fas fa-cloud-rain";
+    } else if (data.cluster === "Berangin") {
+        icon.className = "fas fa-wind";
+    } else if (data.cluster === "Panas") {
+        icon.className = "fas fa-sun";
+    } else {
+        icon.className = "fas fa-cloud-sun";
+    }
+
+    document.getElementById("summaryManual").innerText =
+        `Berdasarkan input, kondisi cuaca termasuk kategori ${data.cluster}.`;
+
+    document.getElementById("interpretasiManual").innerText =
+        "Hasil ini diperoleh dari pengelompokan sederhana berbasis rule (simulasi K-Means).";
+
+    // 🔥 INI YANG PALING PENTING: TAMPILKAN MODAL
+    document.getElementById("modalManual").style.display = "flex";
+}
+
+
+function predictManual() {
+    const temp = document.getElementById("m_temp").value;
+    const rain = document.getElementById("m_rain").value;
+    const wind = document.getElementById("m_wind").value;
+
+    if (!temp || !rain || !wind) {
+        alert("Mohon isi semua data");
+        return;
+    }
+
+    // 🔥 DUMMY LOGIC (biar keliatan kayak ML dikit 😎)
+    let cluster = "Cerah";
+
+    if (rain > 50) {
+        cluster = "Hujan";
+    } else if (wind > 20) {
+        cluster = "Berangin";
+    } else if (temp > 32) {
+        cluster = "Panas";
+    }
+
+    // 🔥 PANGGIL MODAL
+    showManualResult({
+        temp: temp,
+        rain: rain,
+        wind: wind,
+        cluster: cluster
+    });
+}
+
+function closeManual() {
+    document.getElementById("modalManual").style.display = "none";
+}
+
+// =======================================
+// RESET MANUAL INPUT 
+// =======================================
+function resetManualInput() {
+    document.getElementById("m_temp").value = "";
+    document.getElementById("m_rain").value = "";
+    document.getElementById("m_wind").value = "";
+
+    document.getElementById("manualDetailResult").classList.add("hidden");
+
+}
+
+
+// =======================================
+// BUBLE PARTICLE
 // =======================================
 document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < 40; i++) {
@@ -269,7 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // =======================================
-/*SCROOL REVEAL*/
+// SCROOL REVEAL
 // =======================================
 const reveals = document.querySelectorAll(".reveal");
 

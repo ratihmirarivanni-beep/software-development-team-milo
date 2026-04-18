@@ -152,6 +152,56 @@
                 </div>
             </div>
         </div>
+
+        <!-- MODAL HASIL INPUT MANUAL -->
+        <div id="modalManual" class="modal">
+            <div class="modal-content">
+
+                <span class="close-btn" onclick="closeManual()">✖</span>
+
+                <h2>Hasil Prediksi Manual</h2>
+
+                <div class="cuaca-header">
+                    <i id="iconManual" class="fas fa-cloud-sun"></i>
+
+                    <div class="cuaca-main">
+                        <h3 id="clusterManual">Cluster -</h3>
+                        <div class="suhu-utama">
+                            <span id="tempManual"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hasil-top">
+                    <div class="box-info">
+                        <span class="icon">🌧️</span>
+                        <div class="text">
+                            <div class="label">Curah Hujan</div>
+                            <div class="value" id="rainManual"></div>
+                        </div>
+                    </div>
+
+                    <div class="box-info">
+                        <span class="icon">༄</span>
+                        <div class="text">
+                            <div class="label">Kecepatan Angin</div>
+                            <div class="value" id="windManual"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-box">
+                    <p id="summaryManual"></p>
+                </div>
+
+                <div class="interpretasi-box">
+                    <h4>Interpretasi</h4>
+                    <p id="interpretasiManual"></p>
+                </div>
+
+            </div>
+        </div>
+
     </section>
 
     <!-- MODAL HASIL INPUT KOTA -->
