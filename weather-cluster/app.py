@@ -112,6 +112,73 @@ def get_forecast(city):
         return []
 
 # ===========================================
+# ENDPOINT PREDIKSI (CITY)
+# ===========================================
+@app.route("/predict", methods=["GET"])
+def predict_weather():
+    city = request.args.get("city")
+    if not city:
+        return jsonify({"error": "City kosong"}), 400
+
+    try:
+        scaled, original_values, raw = get_weather(city)
+        rain, temp_min, temp_max, wind = original_values
+
+        km_cluster = int(kmeans.predict(scaled)[0])
+        kategori_manual = WeatherInterpreter(rain, temp_max, temp_max, wind).get_category()
+
+        return jsonify({
+            "city": city,
+            "raw_weather": {
+                "temp_c": temp_max,
+                "humidity": raw["main"]["humidity"],
+                "precip_mm": rain,
+                "wind_kph": wind,
+                "description": raw["weather"][0]["description"]
+            },
+            "trend": get_forecast(city),
+            "manual_interpretation": kategori_manual,
+            "kmeans": {
+                "cluster": km_cluster,
+                "kategori": kategori_manual
+            }
+        })
+
+    except Exception as e:
+        return jsonify({"error": "Gagal mengambil data cuaca", "detail": str(e)}), 500
+
+# ===========================================
+# ENDPOINT PREDIKSI MANUAL
+# ===========================================
+@app.route("/predict/manual", methods=["POST"])
+def predict_manual():
+    data = request.get_json()
+    try:
+        temp = float(data["temp"])
+        rain = float(data["rain"])
+        wind = float(data["wind"])
+    except:
+        return jsonify({"error": "Input tidak valid"}), 400
+
+    df = pd.DataFrame([{
+        "precipitation": rain,
+        "temp_min": temp,
+        "temp_max": temp,
+        "wind": wind
+    }])
+
+    km_cluster = int(kmeans.predict(df)[0])
+    kategori_manual = WeatherInterpreter(rain, temp, temp, wind).get_category()
+
+    return jsonify({
+        "manual_interpretation": kategori_manual,
+        "kmeans": {
+            "cluster": km_cluster,
+            "kategori": kategori_manual
+        }
+    })
+
+# ===========================================
 # HOME
 # ===========================================
 @app.route("/")
