@@ -45,7 +45,7 @@
         <div class="search-box fade-in delay2">
             <input type="text" placeholder="Cari kota..." id="cityInput">
             <div class="button-group-search">
-                <button class="btn-search" onclick="searchCity()">Cari</button>
+                <button class="btn-search">Cari</button>
                 <button class="btn-reset" onclick="resetSearchInput()">Batal</button>
             </div>
         </div>
@@ -210,7 +210,10 @@
 
             <span class="close-btn" onclick="closeModal()">✖</span>
 
-            <h2>Hasil Prediksi</h2>
+            <div class="modal-header">
+                <h2>Hasil Prediksi</h2>
+                <p class="subtitle">Analisis cuaca berbasis clustering</p>
+            </div>
 
             <p id="kotaHasil">📍 KOTA -</p>
             <p id="timeNow" class="time-update">⏰ Update: -</p>
@@ -218,15 +221,16 @@
             <div class="hasil-top">
                 <div class="cuaca-icon">
                     <i class="fas fa-cloud-sun"></i>
-                    <h3>24°C</h3>
-                    <p>Cluster <b>CERAH</b></p>
+                    <h3 id="tempValue">-°C</h3>
+                    <p class="cluster-label">Cluster -</p>
+                    <p class="kategori-label">-</p>
                 </div>
 
                 <div class="box-info">
                     <span class="icon">🌧️</span>
                     <div class="text">
                         <div class="label">Curah Hujan</div>
-                        <div class="value">10 mm</div>
+                        <div class="value" id="rainCity">-</div>
                     </div>
                 </div>
 
@@ -234,14 +238,14 @@
                     <span class="icon">༄</span>
                     <div class="text">
                         <div class="label">Angin</div>
-                        <div class="value">0-0.2 m/s</div>
+                        <div class="value" id="windCity">-</div>
                     </div>
                 </div>
             </div>
 
-            <h3>Prakiraan Cuaca Hari Ini </h3>
-            <p id="timeNow" style="text-align:center; font-size:14px; color:#555;"></p>
-            <canvas id="chartDummy"></canvas>
+            <div class="chart-box">
+                <h3>Prakiraan Cuaca Hari Ini</h3>
+                <canvas id="chartDummy"></canvas>
             </div>
 
         </div>
@@ -300,6 +304,13 @@
         </div>
     </footer>
 
+    <!-- LOADING-->
+    <div id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loader"></div>
+            <p>Memuat data cuaca...</p>
+        </div>
+    </div>
     
     <script src="../static/js/script.js"></script>
 
