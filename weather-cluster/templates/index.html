@@ -243,10 +243,17 @@
                 </div>
             </div>
 
-            <div class="chart-box">
-                <h3>Prakiraan Cuaca Hari Ini</h3>
-                <canvas id="chartDummy"></canvas>
-            </div>
+                <div class="chart-box">
+                    <h3>Prakiraan Cuaca Hari Ini</h3>
+                    <div class="chart-tabs">
+                        <button class="chart-tab active" onclick="switchTab('all')">Semua</button>
+                        <button class="chart-tab" onclick="switchTab('temp')">Suhu</button>
+                        <button class="chart-tab" onclick="switchTab('rain')">Curah Hujan</button>
+                        <button class="chart-tab" onclick="switchTab('wind')">Angin</button>
+                    </div>
+                    <canvas id="chartForecast"></canvas>
+                    <div class="chart-legend" id="chartLegend"></div>
+                </div>
 
         </div>
     </div>

@@ -169,11 +169,20 @@ function showCityResult(data) {
         "📍 " + data.city.toUpperCase();
 
     // UPDATE JAM SEKARANG
-    document.getElementById("timeNow").innerText =
-        "⏰ Update: " + now.toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit"
-        });
+    const formattedDate = now.toLocaleDateString("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    });
+
+    const formattedTime = now.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    document.getElementById("timeNow").innerHTML =
+        `📅 ${formattedDate}<br>⏰ ${formattedTime}`;
 
     // INFO FORECAST
 
@@ -195,9 +204,174 @@ function showCityResult(data) {
 // =======================================
 // CHART: Menampilkan grafik forecast + titik real-time
 // =======================================
-function loadForecastChart(trend, realtime) {
-    const ctx = document.getElementById("chartDummy").getContext("2d");
+let chartDataGlobal = null;
+let realtimeGlobal = null;
 
+function switchTab(tab) {
+    document.querySelectorAll(".chart-tab").forEach(btn => btn.classList.remove("active"));
+    document.querySelector(`.chart-tab[onclick="switchTab('${tab}')"]`).classList.add("active");
+    buildChart(tab);
+}
+
+function buildChart(mode = "all") {
+    if (!chartDataGlobal) return;
+
+    const { labels, tempData, rainData, windData, clusterData, kategoriData, currentXFraction, currentHour, currentMinute } = chartDataGlobal;
+    const realtime = realtimeGlobal;
+    const ctx = document.getElementById("chartForecast").getContext("2d");
+
+    if (window.myChart) {
+        window.myChart.destroy();
+        window.myChart = null;
+    }
+
+    const toPoints = (arr) => arr.map((v, i) => ({ x: i, y: v }));
+
+    let datasets = [];
+    let legendItems = [];
+
+    if (mode === "all") {
+        datasets = [
+            {
+                label: "Suhu",
+                data: toPoints(tempData),
+                borderColor: "#ff9800",
+                backgroundColor: "rgba(255,152,0,0.15)",
+                fill: true, tension: 0.4, pointRadius: 4
+            },
+            {
+                label: "Hujan",
+                data: toPoints(rainData),
+                borderColor: "#2196f3",
+                backgroundColor: "rgba(33,150,243,0.12)",
+                fill: true, tension: 0.4, pointRadius: 4
+            },
+            {
+                label: "Angin",
+                data: toPoints(windData),
+                borderColor: "#4caf50",
+                backgroundColor: "rgba(76,175,80,0.12)",
+                fill: true, tension: 0.4, pointRadius: 4
+            },
+            {
+                type: "scatter",
+                label: "Waktu Sekarang",
+                data: [{ x: currentXFraction, y: realtime.temp_c }],
+                pointRadius: 8, pointHoverRadius: 10,
+                pointBackgroundColor: "red",
+                pointBorderColor: "#fff", pointBorderWidth: 2,
+                showLine: false
+            }
+        ];
+        legendItems = [
+            { label: "Suhu", color: "#ff9800" },
+            { label: "Hujan", color: "#2196f3" },
+            { label: "Angin", color: "#4caf50" },
+            { label: "Waktu Sekarang", color: "red", isDot: true }
+        ];
+    } else if (mode === "temp") {
+        datasets = [{
+            label: "Suhu (°C)",
+            data: toPoints(tempData),
+            borderColor: "#ff9800",
+            backgroundColor: "rgba(255,152,0,0.15)",
+            fill: true, tension: 0.4, pointRadius: 4
+        }];
+        legendItems = [{ label: "Suhu (°C)", color: "#ff9800" }];
+    } else if (mode === "rain") {
+        datasets = [{
+            label: "Curah Hujan (mm)",
+            data: toPoints(rainData),
+            borderColor: "#2196f3",
+            backgroundColor: "rgba(33,150,243,0.12)",
+            fill: true, tension: 0.4, pointRadius: 4
+        }];
+        legendItems = [{ label: "Curah Hujan (mm)", color: "#2196f3" }];
+    } else if (mode === "wind") {
+        datasets = [{
+            label: "Angin (kph)",
+            data: toPoints(windData),
+            borderColor: "#4caf50",
+            backgroundColor: "rgba(76,175,80,0.12)",
+            fill: true, tension: 0.4, pointRadius: 4
+        }];
+        legendItems = [{ label: "Angin (kph)", color: "#4caf50" }];
+    }
+
+    // Render legend custom di bawah grafik
+    const legendEl = document.getElementById("chartLegend");
+    legendEl.innerHTML = legendItems.map(item => `
+        <span class="legend-item">
+            <span class="legend-dot" style="background:${item.color}; border-radius:${item.isDot ? '50%' : '3px'};"></span>
+            ${item.label}
+        </span>
+    `).join("");
+
+    window.myChart = new Chart(ctx, {
+        type: "line",
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            const first = context[0];
+                            let hour = first.dataset.label === "Waktu Sekarang"
+                                ? currentHour
+                                : parseInt(labels[first.dataIndex].split(":")[0]);
+                            let emoji = "🌙", period = "Malam";
+                            if (hour >= 5 && hour < 11) { emoji = "🌅"; period = "Pagi"; }
+                            else if (hour >= 11 && hour < 15) { emoji = "☀️"; period = "Siang"; }
+                            else if (hour >= 15 && hour < 18) { emoji = "🌇"; period = "Sore"; }
+                            if (first.dataset.label === "Waktu Sekarang")
+                                return `${emoji} ${currentHour}:${String(currentMinute).padStart(2, "0")} (${period})`;
+                            return `${emoji} ${labels[first.dataIndex]} (${period})`;
+                        },
+                        label: () => null,
+                        afterBody: function(context) {
+                            const i = context[0].dataIndex;
+                            if (context[0].dataset.label === "Waktu Sekarang") {
+                                return [
+                                    `🌡️ Suhu: ${realtime.temp_c}°C`,
+                                    `🌧️ Curah Hujan: ${realtime.precip_mm} mm`,
+                                    `💨 Angin: ${realtime.wind_kph.toFixed(1)} kph`,
+                                    `📌 Real-time data`
+                                ];
+                            }
+                            if (mode === "all") {
+                                return [
+                                    `🌡️ Suhu: ${tempData[i]}°C`,
+                                    `🌧️ Curah Hujan: ${rainData[i]} mm`,
+                                    `💨 Angin: ${windData[i]} kph`,
+                                    `📌 Cluster: ${clusterData[i]} • ${kategoriData[i]}`
+                                ];
+                            }
+                            if (mode === "temp") return [`🌡️ Suhu: ${tempData[i]}°C`];
+                            if (mode === "rain") return [`🌧️ Curah Hujan: ${rainData[i]} mm`];
+                            if (mode === "wind") return [`💨 Angin: ${windData[i]} kph`];
+                        }
+                    }
+                }
+            },
+            interaction: { mode: "nearest", intersect: true },
+            scales: {
+                x: {
+                    type: "linear",
+                    min: 0,
+                    max: labels.length - 1,
+                    ticks: {
+                        stepSize: 1,
+                        callback: (value) => labels[value] || ""
+                    }
+                }
+            }
+        }
+    });
+}
+
+function loadForecastChart(trend, realtime) {
     const labels = trend.map(item => item.time);
     const tempData = trend.map(item => item.temp);
     const rainData = trend.map(item => item.rain);
@@ -210,198 +384,25 @@ function loadForecastChart(trend, realtime) {
     const currentMinute = now.getMinutes();
 
     let currentXFraction = 0;
-    let nearestIndex = 0;
-
-    // cari posisi antar label
     for (let i = 0; i < labels.length - 1; i++) {
         const hour1 = parseInt(labels[i].split(":")[0]);
         const hour2 = parseInt(labels[i + 1].split(":")[0]);
-
         if (currentHour >= hour1 && currentHour <= hour2) {
             const totalMinutes = (hour2 - hour1) * 60;
             const passedMinutes = ((currentHour - hour1) * 60) + currentMinute;
-
             currentXFraction = i + (passedMinutes / totalMinutes);
-            nearestIndex = i;
             break;
         }
     }
 
-    // plugin titik merah custom
-    const currentTimePlugin = {
-        id: "currentTimePlugin",
-        afterDatasetsDraw(chart) {
-            const { ctx, scales: { x, y } } = chart;
+    chartDataGlobal = { labels, tempData, rainData, windData, clusterData, kategoriData, currentXFraction, currentHour, currentMinute };
+    realtimeGlobal = realtime;
 
-            const xStart = x.getPixelForValue(Math.floor(currentXFraction));
-            const xEnd = x.getPixelForValue(Math.ceil(currentXFraction));
+    // Reset tab ke "Semua" tiap buka modal baru
+    document.querySelectorAll(".chart-tab").forEach(btn => btn.classList.remove("active"));
+    document.querySelector(".chart-tab[onclick=\"switchTab('all')\"]").classList.add("active");
 
-            const xPos = xStart + (xEnd - xStart) * (currentXFraction % 1);
-            const yPos = y.getPixelForValue(realtime.temp_c);
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(xPos, yPos, 8, 0, Math.PI * 2);
-            ctx.fillStyle = "red";
-            ctx.fill();
-
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = "white";
-            ctx.stroke();
-            ctx.restore();
-        }
-    };
-
-    if (window.myChart) {
-        window.myChart.destroy();
-    }
-
-    const tempPoints = tempData.map((value, index) => ({
-        x: index,
-        y: value
-    }));
-
-    const rainPoints = rainData.map((value, index) => ({
-        x: index,
-        y: value
-    }));
-
-    const windPoints = windData.map((value, index) => ({
-        x: index,
-        y: value
-    }));
-
-    window.myChart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels,
-            datasets: [
-                {
-                    label: "🌡️ Suhu",
-                    data: tempPoints,
-                    borderColor: "#ff9800",
-                    backgroundColor: "rgba(255,152,0,0.15)",
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4
-                },
-                {
-                    label: "🌧️ Hujan",
-                    data: rainPoints,
-                    borderColor: "#2196f3",
-                    backgroundColor: "rgba(33,150,243,0.12)",
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4
-                },
-                {
-                    label: "💨 Angin",
-                    data: windPoints,
-                    borderColor: "#4caf50",
-                    backgroundColor: "rgba(76,175,80,0.12)",
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4
-                },
-                {
-                    type: "scatter",
-                    label: "Waktu Sekarang",
-                    data: [{
-                        x: currentXFraction,
-                        y: realtime.temp_c
-                    }],
-                    pointRadius: 8,
-                    pointHoverRadius: 10,
-                    pointBackgroundColor: "red",
-                    pointBorderColor: "#fff",
-                    pointBorderWidth: 2,
-                    showLine: false
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            interaction: {
-                mode: "nearest",
-                intersect: true
-            },
-            scales: {
-                x: {
-                    type: "linear",
-                    min: 0,
-                    max: labels.length - 1,
-                    ticks: {
-                        stepSize: 1,
-                        callback: function(value) {
-                            return labels[value] || "";
-                        }
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        title: function(context) {
-                            const first = context[0];
-                            let hour;
-
-                            if (first.dataset.label === "Waktu Sekarang") {
-                                hour = currentHour;
-                            } else {
-                                hour = parseInt(labels[first.dataIndex].split(":")[0]);
-                            }
-
-                            let emoji = "🌙";
-                            let period = "Malam";
-
-                            if (hour >= 5 && hour < 11) {
-                                emoji = "🌅";
-                                period = "Pagi";
-                            } else if (hour >= 11 && hour < 15) {
-                                emoji = "☀️";
-                                period = "Siang";
-                            } else if (hour >= 15 && hour < 18) {
-                                emoji = "🌇";
-                                period = "Sore";
-                            }
-
-                            if (first.dataset.label === "Waktu Sekarang") {
-                                return `${emoji} ${currentHour}:${String(currentMinute).padStart(2, "0")} (${period})`;
-                            }
-
-                            return `${emoji} ${labels[first.dataIndex]} (${period})`;
-                        },
-
-                        label: function() {
-                            return null; 
-                        },
-
-                        afterBody: function(context) {
-                            let i = context[0].dataIndex;
-
-                            // 🔴 real-time
-                            if (context[0].dataset.label === "Waktu Sekarang") {
-                                return [
-                                    `🌡️ Suhu: ${realtime.temp_c}°C`,
-                                    `🌧️ Curah Hujan: ${realtime.precip_mm} mm`,
-                                    `💨 Angin: ${realtime.wind_kph.toFixed(1)} kph`,
-                                    `📌 Real-time data`
-                                ];
-                            }
-
-                            // 🔵 forecast
-                            return [
-                                `🌡️ Suhu: ${tempData[i]}°C`,
-                                `🌧️ Curah Hujan: ${rainData[i]} mm`,
-                                `💨 Angin: ${windData[i]} kph`,
-                                `📌 Cluster: ${clusterData[i]} • ${kategoriData[i]}`
-                            ];
-                        }
-                    }
-                }
-            }
-        }
-    });
+    buildChart("all");
 }
 
 // =======================================
