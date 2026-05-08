@@ -996,6 +996,39 @@ button:active {
 }
 
 /* ================================
+   SUGGEST KOTA 
+================================ */
+.dropdown-container {
+    position: relative;
+    width: 250px;
+}
+#cityInput {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+.dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    border: 1px solid #ccc;
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+.dropdown-item {
+    padding: 8px;
+    cursor: pointer;
+}
+.dropdown-item:hover {
+    background: #7da0b9;
+}
+.dropdown-item.active {
+    background-color: #7da0b9;
+}
+
+/* ================================
    FOOTER 
 ================================ */
 .main-footer {

@@ -37,13 +37,16 @@
         </div>
 
         <div class="hero-content">
-            <span class="badge-ml">Machine Learning</span>
+            <span class="badge-ml">Weather Cluster</span>
 
             <h1 class="fade-in">Prediksi Cuaca Berbasis Clustering</h1>
             <p class="fade-in delay1"><b>Cari kota untuk melihat kondisi cuaca berdasarkan data cuaca saat ini</b></p>
 
         <div class="search-box fade-in delay2">
-            <input type="text" placeholder="Cari kota..." id="cityInput">
+            <div class="dropdown-container">
+                <input type="text" placeholder="Cari kota..." id="cityInput">
+                <div id="suggestions"></div>
+            </div>
             <div class="button-group-search">
                 <button class="btn-search">Cari</button>
                 <button class="btn-reset" onclick="resetSearchInput()">Batal</button>

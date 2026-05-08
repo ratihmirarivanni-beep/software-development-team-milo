@@ -122,30 +122,108 @@ async function searchCity() {
 }
 
 // =======================================
+// SUGGEST KOTA: Autocomplete input kota
+// =======================================
+let debounceTimer;
+let activeIndex = -1; 
+const cache = {};
+
+async function fetchSuggestions(query) {
+  if (cache[query]) return cache[query];
+  const response = await fetch(`/suggest?q=${encodeURIComponent(query)}`);
+  const data = await response.json();
+  const result = Array.isArray(data) ? data : [];
+  cache[query] = result;
+  return result;
+}
+
+document.getElementById("cityInput").addEventListener("input", (e) => {
+  const query = e.target.value.trim();
+  const dropdown = document.getElementById("suggestions");
+  clearTimeout(debounceTimer);
+  dropdown.innerHTML = "";
+  activeIndex = -1; 
+  if (query.length < 1) return;
+  if (cache[query]) {
+    fetchSuggestions(query).then(suggestions => renderSuggestions(suggestions, dropdown));
+    return;
+  }
+  debounceTimer = setTimeout(async () => {
+    const suggestions = await fetchSuggestions(query);
+    renderSuggestions(suggestions, dropdown);
+  }, 250);
+});
+
+document.getElementById("cityInput").addEventListener("keydown", (e) => {
+  const dropdown = document.getElementById("suggestions");
+  const items = dropdown.querySelectorAll(".dropdown-item");
+  if (!items.length) return;
+
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    activeIndex = (activeIndex + 1) % items.length;
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    activeIndex = (activeIndex - 1 + items.length) % items.length;
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    if (activeIndex >= 0 && items[activeIndex]) {
+      items[activeIndex].click();
+    }
+    return;
+  } else if (e.key === "Escape") {
+    dropdown.innerHTML = "";
+    activeIndex = -1;
+    return;
+  }
+
+  items.forEach((item, i) => {
+    item.classList.toggle("active", i === activeIndex);
+  });
+});
+
+function renderSuggestions(suggestions, dropdown) {
+  dropdown.innerHTML = "";
+  activeIndex = -1; 
+
+  suggestions.forEach(city => {
+    const item = document.createElement("div");
+    item.className = "dropdown-item";
+    item.textContent = city;
+    item.onclick = () => {
+      const cityOnly = city.split(",")[0].trim();
+      document.getElementById("cityInput").value = city;
+      dropdown.innerHTML = "";
+      fetch(`/predict?city=${encodeURIComponent(cityOnly)}`)
+        .then(res => res.json())
+        .then(data => {
+          showCityResult(data);
+        });
+    };
+    dropdown.appendChild(item);
+  });
+}
+
+// =======================================
 // UTIL: Menentukan icon cuaca berdasarkan kondisi & waktu
 // =======================================
-function getWeatherIcon(cluster, hour) {
-    const isNight = hour >= 18 || hour < 5;
+function getWeatherIcon(kategori) {
+    const hour = new Date().getHours(); 
+    const isNight = hour >= 18 || hour < 6;
+
+    const k = kategori.toLowerCase();
 
     if (isNight) {
-        if (cluster.toLowerCase().includes("hujan")) {
-            return "fas fa-cloud-moon-rain";
-        }
-        if (cluster.toLowerCase().includes("berangin")) {
-            return "fas fa-wind";
-        }
-        return "fas fa-moon";
+        if (k.includes("hujan"))    return "fas fa-cloud-moon-rain";
+        if (k.includes("berangin")) return "fas fa-wind";
+        if (k.includes("mendung"))  return "fas fa-cloud-moon";
+        return "fas fa-moon"; 
     } else {
-        if (cluster.toLowerCase().includes("hujan")) {
-            return "fas fa-cloud-rain";
-        }
-        if (cluster.toLowerCase().includes("berangin")) {
-            return "fas fa-wind";
-        }
-        if (cluster.toLowerCase().includes("panas")) {
-            return "fas fa-sun";
-        }
-        return "fas fa-cloud-sun";
+        if (k.includes("hujan"))    return "fas fa-cloud-rain";
+        if (k.includes("berangin")) return "fas fa-wind";
+        if (k.includes("mendung"))  return "fas fa-cloud";
+        if (k.includes("panas"))    return "fas fa-sun";
+        return "fas fa-cloud-sun"; 
     }
 }
 
@@ -411,6 +489,8 @@ function loadForecastChart(trend, realtime) {
 
 function resetSearchInput() {
     document.getElementById("cityInput").value = "";
+    document.getElementById("suggestions").innerHTML = ""; // ✅ hilangkan suggest
+    activeIndex = -1; // ✅ reset navigasi keyboard
 }
 
 // =======================================
