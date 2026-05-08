@@ -190,15 +190,36 @@ function renderSuggestions(suggestions, dropdown) {
     const item = document.createElement("div");
     item.className = "dropdown-item";
     item.textContent = city;
-    item.onclick = () => {
-      const cityOnly = city.split(",")[0].trim();
-      document.getElementById("cityInput").value = city;
-      dropdown.innerHTML = "";
-      fetch(`/predict?city=${encodeURIComponent(cityOnly)}`)
-        .then(res => res.json())
-        .then(data => {
-          showCityResult(data);
-        });
+    item.onclick = async () => {
+        const cityOnly = city.split(",")[0].trim();
+        const loading = document.getElementById("loadingOverlay");
+        const btn = document.querySelector(".btn-search");
+
+        document.getElementById("cityInput").value = city;
+        dropdown.innerHTML = "";
+
+        loading.style.display = "flex";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`/predict?city=${encodeURIComponent(cityOnly)}`);
+            const data = await response.json();
+
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            showCityResult(data);
+
+        } catch (error) {
+            console.error(error);
+            alert("Gagal mengambil data");
+
+        } finally {
+            loading.style.display = "none";
+            btn.disabled = false;
+        }
     };
     dropdown.appendChild(item);
   });

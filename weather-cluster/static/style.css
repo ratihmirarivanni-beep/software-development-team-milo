@@ -712,7 +712,12 @@ button:active {
     cursor: pointer;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
-
+.close-btn:hover {
+    background: #ff3b3b;
+    transform: scale(1.08) rotate(90deg);
+    box-shadow: 0 8px 20px rgba(255, 59, 59, 0.4);
+    transition: all 0.3s ease;
+}
 
 
 
