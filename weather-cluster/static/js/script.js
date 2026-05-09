@@ -15,178 +15,503 @@ window.addEventListener('scroll', changeNavbarBackground);
 window.addEventListener('load', changeNavbarBackground);
 
 
+// =======================================
+// NAVBAR: Toggle menu (mode mobile)
+// =======================================
 function toggleMenu() {
     document.getElementById("nav-menu").classList.toggle("show");
 }
 
 // =======================================
-// ENTER KEY NAVIGATION
+// INPUT HANDLING: Enter key & tombol aksi
 // =======================================
-const inputs = document.querySelectorAll(".input-group input");
-inputs.forEach((input, i) => {
-    input.addEventListener("keydown", e => {
+document.addEventListener("DOMContentLoaded", () => {
+
+    // Navigasi pada input kota
+    document.getElementById("cityInput").addEventListener("keydown", function(e) {
         if (e.key === "Enter") {
             e.preventDefault();
-            inputs[i + 1]?.focus();
+            searchCity();
         }
     });
+
+    // tombol search
+    document.querySelector(".btn-search").addEventListener("click", searchCity); 
+
+    // Navigasi input manual 
+    const tempInput = document.getElementById("m_temp");
+    const rainInput = document.getElementById("m_rain");
+    const windInput = document.getElementById("m_wind");
+
+    // ENTER di suhu → pindah ke hujan
+    tempInput.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            rainInput.focus();
+        }
+    });
+
+    // ENTER di hujan → pindah ke angin
+    rainInput.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            windInput.focus();
+        }
+    });
+
+    // ENTER di angin → JALANKAN PREDIKSI
+    windInput.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            predictManual();
+        }
+    });
+
 });
 
 // =======================================
-// HASIL INPUT KOTA DUMMY
+// MODAL: Tutup modal hasil kota
 // =======================================
-function openModal() {
-  const kota = document.querySelector(".search-box input").value;
+function closeModal() {
+  document.getElementById("modalHasil").style.display = "none";
 
-  if (kota === "") {
-    alert("Masukkan kota dulu!");
+    // aktifkan scroll lagi
+    document.body.style.overflow = "auto";
+
+    // destroy chart biar bersih
+    if (window.myChart) {
+        window.myChart.destroy();
+        window.myChart = null;
+    }
+}
+
+// =======================================
+// API CALL: Ambil data cuaca berdasarkan kota
+// =======================================
+async function searchCity() {
+    const city = document.getElementById("cityInput").value;
+    const loading = document.getElementById("loadingOverlay");
+    const btn = document.querySelector(".btn-search");
+
+    if (!city) {
+        alert("Masukkan kota dulu!");
+        return;
+    }
+
+    loading.style.display = "flex";
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(`/predict?city=${city}`);
+        const data = await response.json();
+
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        showCityResult(data);
+
+    } catch (error) {
+        console.error(error);
+        alert("Gagal mengambil data");
+    } finally {
+        loading.style.display = "none";
+        btn.disabled = false;
+    }
+}
+
+// =======================================
+// SUGGEST KOTA: Autocomplete input kota
+// =======================================
+let debounceTimer;
+let activeIndex = -1; 
+const cache = {};
+
+async function fetchSuggestions(query) {
+  if (cache[query]) return cache[query];
+  const response = await fetch(`/suggest?q=${encodeURIComponent(query)}`);
+  const data = await response.json();
+  const result = Array.isArray(data) ? data : [];
+  cache[query] = result;
+  return result;
+}
+
+document.getElementById("cityInput").addEventListener("input", (e) => {
+  const query = e.target.value.trim();
+  const dropdown = document.getElementById("suggestions");
+  clearTimeout(debounceTimer);
+  dropdown.innerHTML = "";
+  activeIndex = -1; 
+  if (query.length < 1) return;
+  if (cache[query]) {
+    fetchSuggestions(query).then(suggestions => renderSuggestions(suggestions, dropdown));
+    return;
+  }
+  debounceTimer = setTimeout(async () => {
+    const suggestions = await fetchSuggestions(query);
+    renderSuggestions(suggestions, dropdown);
+  }, 250);
+});
+
+document.getElementById("cityInput").addEventListener("keydown", (e) => {
+  const dropdown = document.getElementById("suggestions");
+  const items = dropdown.querySelectorAll(".dropdown-item");
+  if (!items.length) return;
+
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    activeIndex = (activeIndex + 1) % items.length;
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    activeIndex = (activeIndex - 1 + items.length) % items.length;
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    if (activeIndex >= 0 && items[activeIndex]) {
+      items[activeIndex].click();
+    }
+    return;
+  } else if (e.key === "Escape") {
+    dropdown.innerHTML = "";
+    activeIndex = -1;
     return;
   }
 
-  // set nama kota
-  document.getElementById("kotaHasil").innerText = "📍 " + kota.toUpperCase();
+  items.forEach((item, i) => {
+    item.classList.toggle("active", i === activeIndex);
+  });
+});
 
-  // tampilkan modal
-  document.getElementById("modalHasil").style.display = "flex";
+function renderSuggestions(suggestions, dropdown) {
+  dropdown.innerHTML = "";
+  activeIndex = -1; 
 
-    const now = new Date();
-    document.getElementById("timeNow").innerText =
-    "Update: " + now.toLocaleTimeString("id-ID", {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+  suggestions.forEach(city => {
+    const item = document.createElement("div");
+    item.className = "dropdown-item";
+    item.textContent = city;
+    item.onclick = async () => {
+        const cityOnly = city.split(",")[0].trim();
+        const loading = document.getElementById("loadingOverlay");
+        const btn = document.querySelector(".btn-search");
 
-  loadChart();
-}
+        document.getElementById("cityInput").value = city;
+        dropdown.innerHTML = "";
 
-function closeModal() {
-  document.getElementById("modalHasil").style.display = "none";
-}
+        loading.style.display = "flex";
+        btn.disabled = true;
 
-// HUBUNGKAN KE TOMBOL CARI
-document.querySelector(".btn-search").addEventListener("click", openModal);
+        try {
+            const response = await fetch(`/predict?city=${encodeURIComponent(cityOnly)}`);
+            const data = await response.json();
 
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
 
-// DUMMY CHART
-function loadChart() {
-  const ctx = document.getElementById('chartDummy').getContext('2d');
-  const clusterData = ['Cerah','Cerah','Berawan','Hujan','Cerah'];
+            showCityResult(data);
 
-  // destroy chart lama biar gak numpuk
-  if (window.myChart) {
-    window.myChart.destroy();
-  }
+        } catch (error) {
+            console.error(error);
+            alert("Gagal mengambil data");
 
-  window.myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ['15.00','18.00','21.00','24.00','03.00'],
-      datasets: [
-        {
-          label: '🌡️ Suhu',
-          data: [24, 26, 25, 23, 22],
-          borderColor: '#ff9800',
-          backgroundColor: 'rgba(255,152,0,0.2)',
-          fill: true,
-          tension: 0.4,
-          pointRadius: 5,
-          pointHoverRadius: 7
-        },
-        {
-          label: '🌧️ Hujan',
-          data: [10, 15, 20, 18, 12],
-          borderColor: '#2196f3',
-          backgroundColor: 'rgba(33,150,243,0.2)',
-          fill: true,
-          tension: 0.4,
-          pointRadius: 5
-        },
-        {
-          label: '💨 Angin',
-          data: [5, 7, 9, 8, 6],
-          borderColor: '#4caf50',
-          backgroundColor: 'rgba(76,175,80,0.2)',
-          fill: true,
-          tension: 0.4,
-          pointRadius: 5
+        } finally {
+            loading.style.display = "none";
+            btn.disabled = false;
         }
-      ]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-        legend: {
-            position: 'bottom'
-        },
-        tooltip: {
-            enabled: true,
-            backgroundColor: 'rgba(255,255,255,0.95)',
-            titleColor: '#333',
-            bodyColor: '#333',
-            borderColor: '#ddd',
-            borderWidth: 1,
-            padding: 12,
-            displayColors: false,
-
-            callbacks: {
-            title: function(context) {
-                return "⏰ " + context[0].label; // waktu
-            },
-            label: function(context) {
-                const dataIndex = context.dataIndex;
-
-                const cluster = clusterData[dataIndex];
-                const suhu = context.chart.data.datasets[0].data[dataIndex];
-                const hujan = context.chart.data.datasets[1].data[dataIndex];
-                const angin = context.chart.data.datasets[2].data[dataIndex];
-
-                return [
-                "📊 Cluster: " + cluster,
-                "🌡️ Suhu: " + suhu + "°C",
-                "🌧️ Hujan: " + hujan + " mm",
-                "💨 Angin: " + angin + " kph"
-                ];
-            }
-            }
-        }
-        },
-        scales: {
-            x: {
-            position: 'top', // 🔥 PINDAH KE ATAS
-            ticks: {
-                callback: function(value) {
-                const labels = ['🌤️ 15.00','🌥️ 18.00','🌙 21.00','🌙 24.00','🌅 03.00'];
-                return labels[value];
-                }
-            },
-            grid: {
-                display: false
-            }
-            },
-            y: {
-            grid: {
-                color: 'rgba(0,0,0,0.05)'
-            }
-            }
-        }
-    }
+    };
+    dropdown.appendChild(item);
   });
 }
 
 // =======================================
-// RESET BUTON (SEARCH CITY)
+// UTIL: Menentukan icon cuaca berdasarkan kondisi & waktu
+// =======================================
+function getWeatherIcon(kategori) {
+    const hour = new Date().getHours(); 
+    const isNight = hour >= 18 || hour < 6;
+
+    const k = kategori.toLowerCase();
+
+    if (isNight) {
+        if (k.includes("hujan"))    return "fas fa-cloud-moon-rain";
+        if (k.includes("berangin")) return "fas fa-wind";
+        if (k.includes("mendung"))  return "fas fa-cloud-moon";
+        return "fas fa-moon"; 
+    } else {
+        if (k.includes("hujan"))    return "fas fa-cloud-rain";
+        if (k.includes("berangin")) return "fas fa-wind";
+        if (k.includes("mendung"))  return "fas fa-cloud";
+        if (k.includes("panas"))    return "fas fa-sun";
+        return "fas fa-cloud-sun"; 
+    }
+}
+
+// =======================================
+// UI: Menampilkan hasil cuaca dari API ke modal
+// =======================================
+function showCityResult(data) {
+    document.getElementById("modalHasil").style.display = "flex";
+    const now = new Date();
+    const hour = now.getHours();
+    const cluster = data.kmeans.kategori;
+    const clusterId = data.kmeans.cluster;
+    const interpretasi = data.manual_interpretation;
+
+    const iconClass = getWeatherIcon(interpretasi, hour);
+    document.querySelector(".cuaca-icon i").className = iconClass;
+
+    document.body.style.overflow = "hidden";
+
+    document.getElementById("kotaHasil").innerText =
+        "📍 " + data.city.toUpperCase();
+
+    // UPDATE JAM SEKARANG
+    const formattedDate = now.toLocaleDateString("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    });
+
+    const formattedTime = now.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    document.getElementById("timeNow").innerHTML =
+        `📅 ${formattedDate}<br>⏰ ${formattedTime}`;
+
+    // INFO FORECAST
+
+    document.querySelector(".cuaca-icon h3").innerText =
+        data.raw_weather.temp_c + "°C";
+
+    document.querySelector(".cluster-label").innerText = `Cluster ${clusterId}`;
+    document.querySelector(".kategori-label").innerText = interpretasi.toUpperCase();
+
+    document.getElementById("rainCity").innerText =
+        data.raw_weather.precip_mm + " mm";
+
+    document.getElementById("windCity").innerText =
+        data.raw_weather.wind_kph.toFixed(1) + " kph";
+
+    loadForecastChart(data.trend, data.raw_weather);
+}
+
+// =======================================
+// CHART: Menampilkan grafik forecast + titik real-time
+// =======================================
+let chartDataGlobal = null;
+let realtimeGlobal = null;
+
+function switchTab(tab) {
+    document.querySelectorAll(".chart-tab").forEach(btn => btn.classList.remove("active"));
+    document.querySelector(`.chart-tab[onclick="switchTab('${tab}')"]`).classList.add("active");
+    buildChart(tab);
+}
+
+function buildChart(mode = "all") {
+    if (!chartDataGlobal) return;
+
+    const { labels, tempData, rainData, windData, clusterData, kategoriData, currentXFraction, currentHour, currentMinute } = chartDataGlobal;
+    const realtime = realtimeGlobal;
+    const ctx = document.getElementById("chartForecast").getContext("2d");
+
+    if (window.myChart) {
+        window.myChart.destroy();
+        window.myChart = null;
+    }
+
+    const toPoints = (arr) => arr.map((v, i) => ({ x: i, y: v }));
+
+    let datasets = [];
+    let legendItems = [];
+
+    if (mode === "all") {
+        datasets = [
+            {
+                label: "Suhu",
+                data: toPoints(tempData),
+                borderColor: "#ff9800",
+                backgroundColor: "rgba(255,152,0,0.15)",
+                fill: true, tension: 0.4, pointRadius: 4
+            },
+            {
+                label: "Hujan",
+                data: toPoints(rainData),
+                borderColor: "#2196f3",
+                backgroundColor: "rgba(33,150,243,0.12)",
+                fill: true, tension: 0.4, pointRadius: 4
+            },
+            {
+                label: "Angin",
+                data: toPoints(windData),
+                borderColor: "#4caf50",
+                backgroundColor: "rgba(76,175,80,0.12)",
+                fill: true, tension: 0.4, pointRadius: 4
+            },
+            {
+                type: "scatter",
+                label: "Waktu Sekarang",
+                data: [{ x: currentXFraction, y: realtime.temp_c }],
+                pointRadius: 8, pointHoverRadius: 10,
+                pointBackgroundColor: "red",
+                pointBorderColor: "#fff", pointBorderWidth: 2,
+                showLine: false
+            }
+        ];
+        legendItems = [
+            { label: "Suhu", color: "#ff9800" },
+            { label: "Hujan", color: "#2196f3" },
+            { label: "Angin", color: "#4caf50" },
+            { label: "Waktu Sekarang", color: "red", isDot: true }
+        ];
+    } else if (mode === "temp") {
+        datasets = [{
+            label: "Suhu (°C)",
+            data: toPoints(tempData),
+            borderColor: "#ff9800",
+            backgroundColor: "rgba(255,152,0,0.15)",
+            fill: true, tension: 0.4, pointRadius: 4
+        }];
+        legendItems = [{ label: "Suhu (°C)", color: "#ff9800" }];
+    } else if (mode === "rain") {
+        datasets = [{
+            label: "Curah Hujan (mm)",
+            data: toPoints(rainData),
+            borderColor: "#2196f3",
+            backgroundColor: "rgba(33,150,243,0.12)",
+            fill: true, tension: 0.4, pointRadius: 4
+        }];
+        legendItems = [{ label: "Curah Hujan (mm)", color: "#2196f3" }];
+    } else if (mode === "wind") {
+        datasets = [{
+            label: "Angin (kph)",
+            data: toPoints(windData),
+            borderColor: "#4caf50",
+            backgroundColor: "rgba(76,175,80,0.12)",
+            fill: true, tension: 0.4, pointRadius: 4
+        }];
+        legendItems = [{ label: "Angin (kph)", color: "#4caf50" }];
+    }
+
+    // Render legend custom di bawah grafik
+    const legendEl = document.getElementById("chartLegend");
+    legendEl.innerHTML = legendItems.map(item => `
+        <span class="legend-item">
+            <span class="legend-dot" style="background:${item.color}; border-radius:${item.isDot ? '50%' : '3px'};"></span>
+            ${item.label}
+        </span>
+    `).join("");
+
+    window.myChart = new Chart(ctx, {
+        type: "line",
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            const first = context[0];
+                            let hour = first.dataset.label === "Waktu Sekarang"
+                                ? currentHour
+                                : parseInt(labels[first.dataIndex].split(":")[0]);
+                            let emoji = "🌙", period = "Malam";
+                            if (hour >= 5 && hour < 11) { emoji = "🌅"; period = "Pagi"; }
+                            else if (hour >= 11 && hour < 15) { emoji = "☀️"; period = "Siang"; }
+                            else if (hour >= 15 && hour < 18) { emoji = "🌇"; period = "Sore"; }
+                            if (first.dataset.label === "Waktu Sekarang")
+                                return `${emoji} ${currentHour}:${String(currentMinute).padStart(2, "0")} (${period})`;
+                            return `${emoji} ${labels[first.dataIndex]} (${period})`;
+                        },
+                        label: () => null,
+                        afterBody: function(context) {
+                            const i = context[0].dataIndex;
+                            if (context[0].dataset.label === "Waktu Sekarang") {
+                                return [
+                                    `🌡️ Suhu: ${realtime.temp_c}°C`,
+                                    `🌧️ Curah Hujan: ${realtime.precip_mm} mm`,
+                                    `💨 Angin: ${realtime.wind_kph.toFixed(1)} kph`,
+                                    `📌 Real-time data`
+                                ];
+                            }
+                            if (mode === "all") {
+                                return [
+                                    `🌡️ Suhu: ${tempData[i]}°C`,
+                                    `🌧️ Curah Hujan: ${rainData[i]} mm`,
+                                    `💨 Angin: ${windData[i]} kph`,
+                                    `📌 Cluster: ${clusterData[i]} • ${kategoriData[i]}`
+                                ];
+                            }
+                            if (mode === "temp") return [`🌡️ Suhu: ${tempData[i]}°C`];
+                            if (mode === "rain") return [`🌧️ Curah Hujan: ${rainData[i]} mm`];
+                            if (mode === "wind") return [`💨 Angin: ${windData[i]} kph`];
+                        }
+                    }
+                }
+            },
+            interaction: { mode: "nearest", intersect: true },
+            scales: {
+                x: {
+                    type: "linear",
+                    min: 0,
+                    max: labels.length - 1,
+                    ticks: {
+                        stepSize: 1,
+                        callback: (value) => labels[value] || ""
+                    }
+                }
+            }
+        }
+    });
+}
+
+function loadForecastChart(trend, realtime) {
+    const labels = trend.map(item => item.time);
+    const tempData = trend.map(item => item.temp);
+    const rainData = trend.map(item => item.rain);
+    const windData = trend.map(item => item.wind);
+    const clusterData = trend.map(item => item.kmeans.cluster);
+    const kategoriData = trend.map(item => item.kmeans.kategori);
+
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    let currentXFraction = 0;
+    for (let i = 0; i < labels.length - 1; i++) {
+        const hour1 = parseInt(labels[i].split(":")[0]);
+        const hour2 = parseInt(labels[i + 1].split(":")[0]);
+        if (currentHour >= hour1 && currentHour <= hour2) {
+            const totalMinutes = (hour2 - hour1) * 60;
+            const passedMinutes = ((currentHour - hour1) * 60) + currentMinute;
+            currentXFraction = i + (passedMinutes / totalMinutes);
+            break;
+        }
+    }
+
+    chartDataGlobal = { labels, tempData, rainData, windData, clusterData, kategoriData, currentXFraction, currentHour, currentMinute };
+    realtimeGlobal = realtime;
+
+    // Reset tab ke "Semua" tiap buka modal baru
+    document.querySelectorAll(".chart-tab").forEach(btn => btn.classList.remove("active"));
+    document.querySelector(".chart-tab[onclick=\"switchTab('all')\"]").classList.add("active");
+
+    buildChart("all");
+}
+
+// =======================================
+// RESET: Input pencarian kota
 // =======================================
 
 function resetSearchInput() {
     document.getElementById("cityInput").value = "";
-    document.getElementById("weatherCard").classList.add("hidden");
-    document.getElementById("trendContainer").classList.add("hidden");
-
-    loadDefaultComparison();
-    loadDefaultComparisonChart();
-
-    document.getElementById("compareDesc").innerHTML =
-        "<strong>Perbandingan pendekatan algoritma clustering sebelum dilakukan prediksi.</strong>";
+    document.getElementById("suggestions").innerHTML = ""; // ✅ hilangkan suggest
+    activeIndex = -1; // ✅ reset navigasi keyboard
 }
 
 // =======================================
@@ -230,10 +555,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // AUTO SLIDE
-    setInterval(() => {
+    let autoSlide = setInterval(nextSlide, 4000);
+
+    function nextSlide() {
         index++;
         moveSlide();
-    }, 4000);
+    }
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            clearInterval(autoSlide);
+        } else {
+            autoSlide = setInterval(nextSlide, 4000);
+        }
+    });
 
     // RESET POSITION TANPA KELIATAN
     track.addEventListener("transitionend", () => {
@@ -252,10 +587,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-
-
 // =======================================
-// HASIL INPUT MANUAL DUMMY
+// MANUAL INPUT: Tampilkan hasil prediksi manual
 // =======================================
 
 function showManualResult(data) {
@@ -264,33 +597,35 @@ function showManualResult(data) {
     document.getElementById("rainManual").innerText = data.rain + " mm";
     document.getElementById("windManual").innerText = data.wind + " kph";
 
-    document.getElementById("clusterManual").innerText = "Cluster - " + data.cluster;
+    document.getElementById("clusterManual").innerText = `Cluster ${data.clusterId} • ${data.kategori}`;
 
     // icon sederhana (opsional)
     const icon = document.getElementById("iconManual");
 
-    if (data.cluster === "Hujan") {
+    if (data.kategori === "Hujan") {
         icon.className = "fas fa-cloud-rain";
-    } else if (data.cluster === "Berangin") {
+    } else if (data.kategori === "Berangin") {
         icon.className = "fas fa-wind";
-    } else if (data.cluster === "Panas") {
+    } else if (data.kategori === "Panas") {
         icon.className = "fas fa-sun";
     } else {
         icon.className = "fas fa-cloud-sun";
     }
 
     document.getElementById("summaryManual").innerText =
-        `Berdasarkan input, kondisi cuaca termasuk kategori ${data.cluster}.`;
+        `Berdasarkan input, kondisi cuaca termasuk kategori ${data.kategori}.`;
 
     document.getElementById("interpretasiManual").innerText =
         "Hasil ini diperoleh dari pengelompokan sederhana berbasis rule (simulasi K-Means).";
 
-    // 🔥 INI YANG PALING PENTING: TAMPILKAN MODAL
     document.getElementById("modalManual").style.display = "flex";
 }
 
+// =======================================
+// API CALL: Prediksi manual (POST request)
+// =======================================
 
-function predictManual() {
+async function predictManual() {
     const temp = document.getElementById("m_temp").value;
     const rain = document.getElementById("m_rain").value;
     const wind = document.getElementById("m_wind").value;
@@ -300,24 +635,33 @@ function predictManual() {
         return;
     }
 
-    // 🔥 DUMMY LOGIC (biar keliatan kayak ML dikit 😎)
-    let cluster = "Cerah";
+    try {
+        const response = await fetch("/predict/manual", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                temp,
+                rain,
+                wind
+            })
+        });
 
-    if (rain > 50) {
-        cluster = "Hujan";
-    } else if (wind > 20) {
-        cluster = "Berangin";
-    } else if (temp > 32) {
-        cluster = "Panas";
+        const data = await response.json();
+
+        showManualResult({
+            temp,
+            rain,
+            wind,
+            clusterId: data.kmeans.cluster,
+            kategori: data.kmeans.kategori
+        });
+
+    } catch (error) {
+        console.error(error);
+        alert("Gagal prediksi manual");
     }
-
-    // 🔥 PANGGIL MODAL
-    showManualResult({
-        temp: temp,
-        rain: rain,
-        wind: wind,
-        cluster: cluster
-    });
 }
 
 function closeManual() {
@@ -331,14 +675,11 @@ function resetManualInput() {
     document.getElementById("m_temp").value = "";
     document.getElementById("m_rain").value = "";
     document.getElementById("m_wind").value = "";
-
-    document.getElementById("manualDetailResult").classList.add("hidden");
-
 }
 
 
 // =======================================
-// BUBLE PARTICLE
+// VISUAL EFFECT: Particle background
 // =======================================
 document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < 40; i++) {
@@ -353,21 +694,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // =======================================
-// SCROOL REVEAL
+// VISUAL EFFECT: Scroll reveal animation
 // =======================================
-const reveals = document.querySelectorAll(".reveal");
+function revealOnScroll() {
+    const reveals = document.querySelectorAll(".reveal");
 
-window.addEventListener("scroll", () => {
     reveals.forEach(el => {
         const top = el.getBoundingClientRect().top;
+
         if (top < window.innerHeight - 100) {
             el.classList.add("show");
         }
     });
+}
+
+window.addEventListener("scroll", revealOnScroll);
+window.addEventListener("load", revealOnScroll);
+window.addEventListener("pageshow", revealOnScroll);
+document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+        revealOnScroll();
+    }
 });
 
 // =============================
-// animasi HUJAN DERAS(HOME ONLY)
+// animasi HUJAN (HOME ONLY)
 // =============================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -430,5 +781,3 @@ document.addEventListener("mousemove", (e) => {
 document.addEventListener("mousedown", (e) => {
   spawnSparkle(e.clientX, e.clientY, 12, 40);
 });
-
-

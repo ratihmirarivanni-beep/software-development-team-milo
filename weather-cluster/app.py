@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify, render_template
 import joblib
 import requests
-import numpy as np
 import pandas as pd
+import os
+import datetime
 
 app = Flask(__name__)
 
@@ -11,38 +12,50 @@ app = Flask(__name__)
 # ===========================================
 kmeans = joblib.load("models/kmeans.joblib")
 
-
 # ===========================================
 # CLASS UNTUK INTERPRETASI CUACA
 # ===========================================
 class WeatherInterpreter:
-    def __init__(self, rain, temp_min, temp_max, wind):
+    def __init__(self, rain, temp_min, temp_max, wind, res=None):
         self.rain = rain
         self.temp_min = temp_min
         self.temp_max = temp_max
         self.wind = wind
+        self.res = res
 
     def get_category(self):
-        if self.temp_max >= 24 and self.rain < 1:
-            return "Panas"
+        hour = datetime.datetime.now().hour
+        is_night = hour >= 18 or hour < 6
+
+        if self.rain > 15:
+            kategori = "Hujan"
         elif self.wind > 4.5 and self.temp_max < 15:
-            return "Berangin"
-        elif self.rain > 15:
-            return "Hujan"
+            kategori = "Berangin"
         elif self.temp_max <= 10:
-            return "Mendung"
-        return "Cerah"
+            kategori = "Mendung"
+        elif self.temp_max >= 24 and self.rain < 1:
+            kategori = "Cerah" if is_night else "Panas"  
+        else:
+            kategori = "Cerah"
+
+        return kategori
+
+# ===========================================
+# API CONFIG
+# ===========================================
+API_KEY = os.getenv("OPENWEATHER_API_KEY")
+BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
+FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast"
+GEOCODE_URL = "http://api.openweathermap.org/geo/1.0/direct"
 
 # ===========================================
 # GET WEATHER DARI OPENWEATHERMAP
 # ===========================================
-API_KEY = "2ccd023b3e382b75cf2f831208594ccf"
-BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
-FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast"
+import datetime
 
 def get_weather(city):
     url = f"{BASE_URL}?q={city}&appid={API_KEY}&units=metric"
-
+    
     try:
         response = requests.get(url, timeout=5)
         response.raise_for_status()
@@ -50,20 +63,47 @@ def get_weather(city):
     except Exception as e:
         raise ValueError(f"Gagal koneksi API cuaca: {e}")
 
-    temp = res["main"]["temp"]
-    rain = res.get("rain", {}).get("1h", 0)
-    wind = res["wind"]["speed"] * 3.6
+    temp     = res["main"]["temp"]
+    temp_min = res["main"]["temp_min"]
+    temp_max = res["main"]["temp_max"]
+    wind     = res["wind"]["speed"] * 3.6
 
-    # Data untuk model
+    rain = 0.0
+    try:
+        f_url = f"{FORECAST_URL}?q={city}&appid={API_KEY}&units=metric"
+        f_res = requests.get(f_url, timeout=5).json()
+
+        now = datetime.datetime.utcnow().timestamp()  
+
+        closest = min(
+            f_res["list"],
+            key=lambda x: abs(x["dt"] - now)
+        )
+
+        rain_raw = (
+            closest.get("rain", {}).get("3h", None) or
+            closest.get("rain", {}).get("1h", None) or
+            0.0
+        )
+        rain = round(rain_raw / 3, 2)
+
+        print(f"Forecast dipilih: {closest['dt_txt']} | rain: {rain}")
+
+    except:
+        rain = (
+            res.get("rain", {}).get("1h", None) or
+            res.get("rain", {}).get("3h", None) or
+            0.0
+        )
+
     df = pd.DataFrame([{
         "precipitation": rain,
-        "temp_min": temp,
-        "temp_max": temp,
+        "temp_min": temp_min,
+        "temp_max": temp_max,
         "wind": wind
     }])
 
-    return df, (rain, temp, temp, wind), res
-
+    return df, (rain, temp_min, temp_max, wind), res
 # ===========================================
 # FORECAST 8 JAM KE DEPAN
 # ===========================================
@@ -89,7 +129,7 @@ def get_forecast(city):
                 "wind": wind
             }])
 
-            km_cluster = int(kmeans.predict(df)[0])
+            km_cluster = int(kmeans.predict(df.values)[0])
             print(time, temp, rain, wind, km_cluster)
 
             kategori = WeatherInterpreter(rain, temp, temp, wind).get_category()
@@ -124,7 +164,7 @@ def predict_weather():
         scaled, original_values, raw = get_weather(city)
         rain, temp_min, temp_max, wind = original_values
 
-        km_cluster = int(kmeans.predict(scaled)[0])
+        km_cluster = int(kmeans.predict(scaled.values)[0])
         kategori_manual = WeatherInterpreter(rain, temp_max, temp_max, wind).get_category()
 
         return jsonify({
@@ -167,7 +207,7 @@ def predict_manual():
         "wind": wind
     }])
 
-    km_cluster = int(kmeans.predict(df)[0])
+    km_cluster = int(kmeans.predict(df.values)[0])
     kategori_manual = WeatherInterpreter(rain, temp, temp, wind).get_category()
 
     return jsonify({
@@ -177,6 +217,49 @@ def predict_manual():
             "kategori": kategori_manual
         }
     })
+
+# ===========================================
+# ENDPOINT AUTO-SUGGEST KOTA
+# ===========================================
+@app.route("/suggest", methods=["GET"])
+def suggest_city():
+    query = request.args.get("q", "").strip()
+    if not query:
+        return jsonify([])
+
+    url = f"{GEOCODE_URL}?q={query}&limit=20&appid={API_KEY}"
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        res = response.json()
+
+        suggestions = []
+        seen = set()
+
+        for city in res:
+            if city.get("country") != "ID":
+                continue
+
+            name  = city.get("name", "").strip()
+            state = city.get("state", "")
+
+            if not name:
+                continue
+
+            if not name.lower().startswith(query.lower()):
+                continue
+
+            parts = [p for p in [name, state] if p]
+            label = ", ".join(parts)
+
+            if label not in seen:
+                seen.add(label)
+                suggestions.append(label)
+
+        return jsonify(suggestions[:8])
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # ===========================================
 # HOME
