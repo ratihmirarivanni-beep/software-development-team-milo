@@ -1,6 +1,7 @@
 txt
 flask
 gunicorn
+requests
 pandas
 numpy
 scikit-learn
