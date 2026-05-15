@@ -13,6 +13,78 @@
 <body>
 
     <!-- NAVBAR -->
+
+    <!-- Topbar mobile -->
+    <div class="mob-topbar">
+        <span class="mob-topbar-logo">
+            WeatherCluster
+        </span>
+        <button class="mob-hamburger" id="mobHamburger" aria-label="Buka menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+    
+    <!-- Overlay -->
+    <div class="mob-overlay" id="mobOverlay"></div>
+    
+    <!-- Sidebar drawer -->
+    <aside class="mob-sidebar" id="mobSidebar" aria-hidden="true">
+    
+        <!-- Header -->
+        <div class="mob-sidebar-head">
+            <div class="mob-sidebar-brand">
+                <div class="mob-sidebar-brand-icon">
+                    <i class="fas fa-cloud-sun"></i>
+                </div>
+                <span class="mob-sidebar-brand-name">WeatherCluster</span>
+            </div>
+            <button class="mob-sidebar-close" id="mobSidebarClose" aria-label="Tutup menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    
+        <!-- Nav links -->
+        <nav class="mob-sidebar-nav">
+            <a href="#beranda" class="is-active">
+                <i class="fas fa-home"></i>
+                Home
+            </a>
+            <a href="#about">
+                <i class="fas fa-star"></i>
+                Fitur &amp; Keunggulan
+            </a>
+            <a href="#manual">
+                <i class="fas fa-sliders-h"></i>
+                Input Manual
+            </a>
+        </nav>
+    
+        <div class="mob-sidebar-divider"></div>
+    
+        <!-- Info project singkat -->
+        <div class="mob-sidebar-info">
+            <div class="mob-sidebar-info-label">
+                <i class="fas fa-info-circle"></i>
+                Tentang Project
+            </div>
+            <p class="mob-sidebar-info-desc">
+                Prediksi cuaca berbasis <b>K-Means Clustering</b> dari data cuaca real-time.
+            </p>
+            <div class="mob-sidebar-info-meta">
+                <div class="mob-sidebar-info-row">
+                    <i class="fas fa-code"></i>
+                    <span>Software Development</span>
+                </div>
+                <div class="mob-sidebar-info-row">
+                    <i class="fas fa-users"></i>
+                    <span>Kelompok 4 &bull; Kelas 3C</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
     <div class="navbar">
         <div class="logo">WeatherCluster</div>
 
@@ -66,61 +138,108 @@
 
                     <!-- Slide 1 -->
                     <div class="feature-item">
-                        <div class="feature-image-container">
-                            <img src="../static/ilus_model.png" alt="Ilustrasi Algoritma" class="feature-img">   
+                        <div class="feature-desktop-only">
+                            <div class="feature-image-container">
+                                <img src="../static/ilus_model.png" alt="Ilustrasi Algoritma" class="feature-img">   
+                            </div>
+                            <div class="feature-content">
+                                <h3>Clustering dengan K-Means</h3>
+                                <p>
+                                    Aplikasi ini menggunakan <b>algoritma K-Means</b> untuk mengelompokkan data cuaca 
+                                    berdasarkan kemiripan nilai seperti suhu, curah hujan, dan kecepatan angin. 
+                                    Dengan metode ini, sistem dapat mengenali pola cuaca secara otomatis dan 
+                                    mengelompokkannya ke dalam beberapa kategori kondisi.
+                                </p>
+                                <ul>
+                                    <li> Mengelompokkan data cuaca berdasarkan kemiripan</li>
+                                    <li> Membantu memahami pola cuaca secara sederhana</li>
+                                    <li> Proses cepat dan efisien</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="feature-content">
-                            <h3>Clustering dengan K-Means</h3>
-                            <p>
-                                Aplikasi ini menggunakan <b>algoritma K-Means</b> untuk mengelompokkan data cuaca 
-                                berdasarkan kemiripan nilai seperti suhu, curah hujan, dan kecepatan angin. 
-                                Dengan metode ini, sistem dapat mengenali pola cuaca secara otomatis dan 
-                                mengelompokkannya ke dalam beberapa kategori kondisi.
-                            </p>
-                            <ul>
-                                <li>✔️ Mengelompokkan data cuaca berdasarkan kemiripan</li>
-                                <li>✔️ Membantu memahami pola cuaca secara sederhana</li>
-                                <li>✔️ Proses cepat dan efisien</li>
+
+                        <div class="feature-mobile-only">
+                            <div class="feature-mob-img-wrap">
+                                <img src="../static/ilus_model.png" alt="Ilustrasi Algoritma" class="feature-mob-img">
+                            </div>
+                            <h3 class="feature-mob-title">Clustering dengan K-Means</h3>
+                            <p class="feature-mob-desc">Mengelompokkan data cuaca otomatis menggunakan algoritma K-Means.</p>
+                            <ul class="feature-mob-list">
+                                <li>Mengelompokkan data cuaca berdasarkan kemiripan</li>
+                                <li>Membantu memahami pola cuaca secara sederhana</li>
+                                <li>Proses cepat dan efisien</li>
                             </ul>
                         </div>
+
+
                     </div>
 
                     <!-- Slide 2 -->
                     <div class="feature-item">
-                        <div class="feature-image-container">
-                            <img src="../static/ilus_data.png" alt="Ilustrasi Data" class="feature-img">
+                        <div class="feature-desktop-only">
+                            <div class="feature-image-container">
+                                <img src="../static/ilus_data.png" alt="Ilustrasi Data" class="feature-img">
+                            </div>
+                            <div class="feature-content">
+                                <h3>Data Cuaca Real-time</h3>
+                                <p>
+                                    Aplikasi memanfaatkan data cuaca dari API serta input manual pengguna 
+                                    untuk melakukan proses clustering. Data yang digunakan meliputi suhu, 
+                                    curah hujan, dan kecepatan angin sebagai parameter utama dalam analisis.
+                                </p>
+                                <ul>
+                                    <li> Data suhu (°C), curah hujan (mm), dan angin (kph)</li>
+                                    <li> Input manual untuk simulasi kondisi cuaca</li>
+                                    <li> Data digunakan langsung untuk proses clustering</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="feature-content">
-                            <h3>Data Cuaca Real-time</h3>
-                            <p>
-                                Aplikasi memanfaatkan data cuaca dari API serta input manual pengguna 
-                                untuk melakukan proses clustering. Data yang digunakan meliputi suhu, 
-                                curah hujan, dan kecepatan angin sebagai parameter utama dalam analisis.
-                            </p>
-                            <ul>
-                                <li>✔️ Data suhu (°C), curah hujan (mm), dan angin (kph)</li>
-                                <li>✔️ Input manual untuk simulasi kondisi cuaca</li>
-                                <li>✔️ Data digunakan langsung untuk proses clustering</li>
+
+                        <div class="feature-mobile-only">
+                            <div class="feature-mob-img-wrap">
+                                <img src="../static/ilus_data.png" alt="Ilustrasi Data" class="feature-mob-img">
+                            </div>
+                            <h3 class="feature-mob-title">Data Cuaca Real-time</h3>
+                            <p class="feature-mob-desc">Data suhu, curah hujan, dan angin dari API maupun input manual.</p>
+                            <ul class="feature-mob-list">
+                                <li>Data suhu (°C), curah hujan (mm), dan angin (kph)</li>
+                                <li>Input manual untuk simulasi kondisi cuaca</li>
+                                <li>Data digunakan langsung untuk proses clustering</li>
                             </ul>
                         </div>
                     </div>
 
                     <!-- Slide 3 -->
                     <div class="feature-item">
-                        <div class="feature-image-container">
-                            <img src="../static/ilus_hasilCluster.png" alt="Ilustrasi Cluster" class="feature-img">
+                        <div class="feature-desktop-only">
+                            <div class="feature-image-container">
+                                <img src="../static/ilus_hasilCluster.png" alt="Ilustrasi Cluster" class="feature-img">
+                            </div>
+                            <div class="feature-content">
+                                <h3>Hasil Clustering Cuaca</h3>
+                                <p>
+                                    Hasil dari K-Means ditampilkan dalam bentuk cluster yang merepresentasikan 
+                                    kondisi cuaca tertentu, seperti cerah, hujan, atau berangin. 
+                                    Setiap cluster membantu pengguna memahami karakteristik cuaca dengan lebih mudah.
+                                </p>
+                                <ul>
+                                    <li> Menampilkan kategori cuaca berdasarkan cluster</li>
+                                    <li> Interpretasi hasil yang mudah dipahami</li>
+                                    <li> Membantu analisis kondisi cuaca secara cepat</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="feature-content">
-                            <h3>Hasil Clustering Cuaca</h3>
-                            <p>
-                                Hasil dari K-Means ditampilkan dalam bentuk cluster yang merepresentasikan 
-                                kondisi cuaca tertentu, seperti cerah, hujan, atau berangin. 
-                                Setiap cluster membantu pengguna memahami karakteristik cuaca dengan lebih mudah.
-                            </p>
-                            <ul>
-                                <li>✔️ Menampilkan kategori cuaca berdasarkan cluster</li>
-                                <li>✔️ Interpretasi hasil yang mudah dipahami</li>
-                                <li>✔️ Membantu analisis kondisi cuaca secara cepat</li>
+
+                        <div class="feature-mobile-only">
+                            <div class="feature-mob-img-wrap">
+                                <img src="../static/ilus_hasilCluster.png" alt="Ilustrasi Cluster" class="feature-mob-img">
+                            </div>
+                            <h3 class="feature-mob-title">Hasil Clustering Cuaca</h3>
+                            <p class="feature-mob-desc">Cluster hasil K-Means merepresentasikan kondisi cerah, hujan, atau berangin.</p>
+                            <ul class="feature-mob-list">
+                                <li>Menampilkan kategori cuaca berdasarkan cluster</li>
+                                <li>Interpretasi hasil yang mudah dipahami</li>
+                                <li>Membantu analisis kondisi cuaca secara cepat</li>
                             </ul>
                         </div>
                     </div>
@@ -137,12 +256,12 @@
         <div class="manual-wrapper">
 
             <!-- KIRI: Ilustrasi -->
-            <div class="manual-left">
+            <div class="manual-left manual-desktop-only">
                 <img src="../static/sunny.jpg" alt="Ilustrasi Cuaca" class="weather-illustration">
             </div>    
 
             <!-- KANAN: Form Input -->
-            <div class="manual-right">
+            <div class="manual-right manual-desktop-only">
                 <br><h2>Prediksi Cuaca Manual</h2><br>
                 <div class="input-group">
                     <input id="m_temp" type="number" placeholder="Suhu (°C)">
@@ -152,6 +271,40 @@
                 <div class="button-group">
                     <button onclick="predictManual()" class="btn-predict">Prediksi Sekarang</button>
                     <button onclick="resetManualInput()" class="btn-reset">Batal</button>
+                </div>
+            </div>
+
+            <!-- MOBILE ONLY -->
+            <div class="manual-mobile-only">
+                <div class="manual-mob-card">
+                    <h2 class="manual-mob-title">Prediksi Cuaca Manual</h2>
+                    <p class="manual-mob-sub">Masukkan data cuaca untuk<br>mendapatkan hasil prediksi</p>
+
+                    <img src="../static/sunny.jpg" alt="Ilustrasi Cuaca" class="manual-mob-img">
+
+                    <div class="manual-mob-inputs">
+                        <div class="manual-mob-input-wrap">
+                            <i class="fa-solid fa-temperature-half manual-mob-icon"></i>
+                            <input id="m_temp_mobile" type="number" placeholder="Suhu (°C)" class="manual-mob-input">
+                        </div>
+                        <div class="manual-mob-input-wrap">
+                            <i class="fa-solid fa-cloud-rain manual-mob-icon"></i>
+                            <input id="m_rain_mobile" type="number" placeholder="Curah Hujan (mm)" class="manual-mob-input">
+                        </div>
+                        <div class="manual-mob-input-wrap">
+                            <i class="fa-solid fa-wind manual-mob-icon"></i>
+                            <input id="m_wind_mobile" type="number" placeholder="Kecepatan Angin (kph)" class="manual-mob-input">
+                        </div>
+                    </div>
+
+                    <div class="manual-mob-buttons">
+                        <button onclick="predictManual()" class="manual-mob-btn-predict">
+                            <i class="fa-solid fa-chart-line"></i> Prediksi Sekarang
+                        </button>
+                        <button onclick="resetManualInput()" class="manual-mob-btn-reset">
+                            <i class="fa-solid fa-rotate-left"></i> Batal / Reset
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -224,39 +377,46 @@
             <div class="hasil-top">
                 <div class="cuaca-icon">
                     <i class="fas fa-cloud-sun"></i>
-                    <h3 id="tempValue">-°C</h3>
-                    <p class="cluster-label">Cluster -</p>
-                    <p class="kategori-label">-</p>
+                    <div>
+                        <h3 id="tempValue">-°C</h3>
+                        <p class="cluster-label">Cluster -</p>
+                        <p class="kategori-label">-</p>
+                    </div>
+
                 </div>
 
-                <div class="box-info">
-                    <span class="icon">🌧️</span>
-                    <div class="text">
-                        <div class="label">Curah Hujan</div>
-                        <div class="value" id="rainCity">-</div>
+                <div class="hasil-boxes">
+                    <div class="box-info">
+                        <span class="icon">🌧️</span>
+                        <div class="text">
+                            <div class="label">Curah Hujan</div>
+                            <div class="value" id="rainCity">-</div>
+                        </div>
                     </div>
+
+                    <div class="box-info">
+                        <span class="icon">༄</span>
+                        <div class="text">
+                            <div class="label">Angin</div>
+                            <div class="value" id="windCity">-</div>
+                        </div>
+                    </div>
+
                 </div>
 
-                <div class="box-info">
-                    <span class="icon">༄</span>
-                    <div class="text">
-                        <div class="label">Angin</div>
-                        <div class="value" id="windCity">-</div>
-                    </div>
-                </div>
             </div>
 
-                <div class="chart-box">
-                    <h3>Prakiraan Cuaca Hari Ini</h3>
-                    <div class="chart-tabs">
-                        <button class="chart-tab active" onclick="switchTab('all')">Semua</button>
-                        <button class="chart-tab" onclick="switchTab('temp')">Suhu</button>
-                        <button class="chart-tab" onclick="switchTab('rain')">Curah Hujan</button>
-                        <button class="chart-tab" onclick="switchTab('wind')">Angin</button>
-                    </div>
-                    <canvas id="chartForecast"></canvas>
-                    <div class="chart-legend" id="chartLegend"></div>
+            <div class="chart-box">
+                <h3>Prakiraan Cuaca Hari Ini</h3>
+                <div class="chart-tabs">
+                    <button class="chart-tab active" onclick="switchTab('all')">Semua</button>
+                    <button class="chart-tab" onclick="switchTab('temp')">Suhu</button>
+                    <button class="chart-tab" onclick="switchTab('rain')">Curah Hujan</button>
+                    <button class="chart-tab" onclick="switchTab('wind')">Angin</button>
                 </div>
+                <canvas id="chartForecast"></canvas>
+                <div class="chart-legend" id="chartLegend"></div>
+            </div>
 
         </div>
     </div>
