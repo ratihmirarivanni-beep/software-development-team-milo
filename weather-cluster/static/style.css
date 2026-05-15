@@ -726,6 +726,12 @@ button:active {
     align-items: flex-start;
 }
 
+.hasil-boxes {
+    display: flex;
+    gap: 15px;
+    flex: 2;
+}
+
 /* CLOSE BUTTON */
 .close-btn {
     position: absolute;
@@ -1539,10 +1545,10 @@ button:active {
     );
     }
 
-    /* gradient bawah asli dimatikan 
+    /* gradient bawah asli dimatikan*/
     .hero::after {
         display: none !important;
-    }*/
+    }
 
 
     .hero-content {
