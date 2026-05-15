@@ -894,7 +894,7 @@ button:active {
     height: 50px;
     border-radius: 50%;
     cursor: pointer;
-    z-index: 10;
+    z-index: 1;
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     transition: all 0.3s ease;
 }
@@ -1821,7 +1821,7 @@ button:active {
         color: #0072c6;
         top: 50%;
         transform: translateY(-50%);
-        z-index: 10;
+        z-index: 1;
     }
 
     .slider-btn.prev { left: 0; }
