@@ -39,9 +39,43 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector(".btn-search").addEventListener("click", searchCity); 
 
     // Navigasi input manual 
-    const tempInput = document.getElementById("m_temp");
-    const rainInput = document.getElementById("m_rain");
-    const windInput = document.getElementById("m_wind");
+    const inputs = [
+        {
+            temp: document.getElementById("m_temp"),
+            rain: document.getElementById("m_rain"),
+            wind: document.getElementById("m_wind")
+        },
+        {
+            temp: document.getElementById("m_temp_mobile"),
+            rain: document.getElementById("m_rain_mobile"),
+            wind: document.getElementById("m_wind_mobile")
+        }
+    ];
+
+    inputs.forEach(group => {
+        if (!group.temp || !group.rain || !group.wind) return;
+
+        group.temp.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                group.rain.focus();
+            }
+        });
+
+        group.rain.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                group.wind.focus();
+            }
+        });
+
+        group.wind.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                predictManual();
+            }
+        });
+    });
 
     // ENTER di suhu → pindah ke hujan
     tempInput.addEventListener("keydown", function(e) {
@@ -89,20 +123,24 @@ function closeModal() {
 // API CALL: Ambil data cuaca berdasarkan kota
 // =======================================
 async function searchCity() {
-    const city = document.getElementById("cityInput").value;
+    const rawCity = document.getElementById("cityInput").value.trim();
     const loading = document.getElementById("loadingOverlay");
     const btn = document.querySelector(".btn-search");
 
-    if (!city) {
+    if (!rawCity) {
         alert("Masukkan kota dulu!");
         return;
     }
+
+    // ✅ Ambil nama kota saja, hapus " City" kalau ada
+    let city = rawCity.split(",")[0].trim();
+    city = city.replace(/\s*city$/i, "").trim();
 
     loading.style.display = "flex";
     btn.disabled = true;
 
     try {
-        const response = await fetch(`/predict?city=${city}`);
+        const response = await fetch(`/predict?city=${encodeURIComponent(city)}`);
         const data = await response.json();
 
         if (data.error) {
@@ -191,7 +229,9 @@ function renderSuggestions(suggestions, dropdown) {
     item.className = "dropdown-item";
     item.textContent = city;
     item.onclick = async () => {
-        const cityOnly = city.split(",")[0].trim();
+        let cityOnly = city.split(",")[0].trim();
+        cityOnly = cityOnly.replace(/\s*city$/i, "").trim();
+
         const loading = document.getElementById("loadingOverlay");
         const btn = document.querySelector(".btn-search");
 
@@ -206,7 +246,8 @@ function renderSuggestions(suggestions, dropdown) {
             const data = await response.json();
 
             if (data.error) {
-                alert(data.error);
+                console.log("Error detail:", data); // ✅ lihat full response
+                alert(data.error + "\n" + (data.detail || ""));
                 return;
             }
 
@@ -626,9 +667,17 @@ function showManualResult(data) {
 // =======================================
 
 async function predictManual() {
-    const temp = document.getElementById("m_temp").value;
-    const rain = document.getElementById("m_rain").value;
-    const wind = document.getElementById("m_wind").value;
+    const temp =
+        document.getElementById("m_temp").value ||
+        document.getElementById("m_temp_mobile").value;
+
+    const rain =
+        document.getElementById("m_rain").value ||
+        document.getElementById("m_rain_mobile").value;
+
+    const wind =
+        document.getElementById("m_wind").value ||
+        document.getElementById("m_wind_mobile").value;
 
     if (!temp || !rain || !wind) {
         alert("Mohon isi semua data");
@@ -675,8 +724,72 @@ function resetManualInput() {
     document.getElementById("m_temp").value = "";
     document.getElementById("m_rain").value = "";
     document.getElementById("m_wind").value = "";
+    
+    document.getElementById("m_temp_mobile").value = "";
+    document.getElementById("m_rain_mobile").value = "";
+    document.getElementById("m_wind_mobile").value = "";
 }
 
+
+// =======================================
+// NAV, HERO, FOOTER RESPONSIVE
+// =======================================
+(function () {
+    var btn     = document.getElementById('mobHamburger');
+    var sidebar = document.getElementById('mobSidebar');
+    var overlay = document.getElementById('mobOverlay');
+    var closeX  = document.getElementById('mobSidebarClose');
+ 
+    if (!btn || !sidebar || !overlay) return;
+ 
+    function open() {
+        sidebar.classList.add('is-open');
+        overlay.classList.add('is-open');
+        btn.classList.add('is-open');
+        btn.setAttribute('aria-expanded', 'true');
+        sidebar.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+ 
+    function close() {
+        sidebar.classList.remove('is-open');
+        overlay.classList.remove('is-open');
+        btn.classList.remove('is-open');
+        btn.setAttribute('aria-expanded', 'false');
+        sidebar.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    // Scroll effect topbar mobile — sama kayak default
+    var topbar = document.querySelector('.mob-topbar');
+    if (topbar) {
+        function changeMobTopbar() {
+            var heroHeight = document.getElementById('beranda').offsetHeight;
+            if (window.scrollY >= heroHeight - 80) {
+                topbar.classList.add('scrolled');
+            } else {
+                topbar.classList.remove('scrolled');
+            }
+        }
+        window.addEventListener('scroll', changeMobTopbar);
+        window.addEventListener('load', changeMobTopbar);
+    }
+ 
+    btn.addEventListener('click', function () {
+        sidebar.classList.contains('is-open') ? close() : open();
+    });
+ 
+    if (closeX) closeX.addEventListener('click', close);
+    overlay.addEventListener('click', close);
+ 
+    sidebar.querySelectorAll('a').forEach(function (a) {
+        a.addEventListener('click', close);
+    });
+ 
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') close();
+    });
+})();
 
 // =======================================
 // VISUAL EFFECT: Particle background
@@ -742,7 +855,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // =======================================
-//Mouse dan KLIK//
+// Mouse dan KLIK
 // =======================================
 function spawnSparkle(x, y, count = 1, spread = 10) {
   for (let i = 0; i < count; i++) {
@@ -765,7 +878,7 @@ function spawnSparkle(x, y, count = 1, spread = 10) {
 let lastTime = 0;
 
 // =======================================
-/* sparkle ikut mouse*/
+// sparkle ikut mouse
 // =======================================
 document.addEventListener("mousemove", (e) => {
   const now = Date.now();
@@ -776,7 +889,7 @@ document.addEventListener("mousemove", (e) => {
 });
 
 // =======================================
-// sparkle pas klik //
+// sparkle pas klik 
 // =======================================
 document.addEventListener("mousedown", (e) => {
   spawnSparkle(e.clientX, e.clientY, 12, 40);
