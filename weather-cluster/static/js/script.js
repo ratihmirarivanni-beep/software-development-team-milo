@@ -123,20 +123,24 @@ function closeModal() {
 // API CALL: Ambil data cuaca berdasarkan kota
 // =======================================
 async function searchCity() {
-    const city = document.getElementById("cityInput").value;
+    const rawCity = document.getElementById("cityInput").value.trim();
     const loading = document.getElementById("loadingOverlay");
     const btn = document.querySelector(".btn-search");
 
-    if (!city) {
+    if (!rawCity) {
         alert("Masukkan kota dulu!");
         return;
     }
+
+    // ✅ Ambil nama kota saja, hapus " City" kalau ada
+    let city = rawCity.split(",")[0].trim();
+    city = city.replace(/\s*city$/i, "").trim();
 
     loading.style.display = "flex";
     btn.disabled = true;
 
     try {
-        const response = await fetch(`/predict?city=${city}`);
+        const response = await fetch(`/predict?city=${encodeURIComponent(city)}`);
         const data = await response.json();
 
         if (data.error) {
@@ -225,7 +229,9 @@ function renderSuggestions(suggestions, dropdown) {
     item.className = "dropdown-item";
     item.textContent = city;
     item.onclick = async () => {
-        const cityOnly = city.split(",")[0].trim();
+        let cityOnly = city.split(",")[0].trim();
+        cityOnly = cityOnly.replace(/\s*city$/i, "").trim();
+
         const loading = document.getElementById("loadingOverlay");
         const btn = document.querySelector(".btn-search");
 
@@ -240,7 +246,8 @@ function renderSuggestions(suggestions, dropdown) {
             const data = await response.json();
 
             if (data.error) {
-                alert(data.error);
+                console.log("Error detail:", data); // ✅ lihat full response
+                alert(data.error + "\n" + (data.detail || ""));
                 return;
             }
 
