@@ -132,7 +132,6 @@ async function searchCity() {
         return;
     }
 
-    // ✅ Ambil nama kota saja, hapus " City" kalau ada
     let city = rawCity.split(",")[0].trim();
     city = city.replace(/\s*city$/i, "").trim();
 
@@ -246,7 +245,7 @@ function renderSuggestions(suggestions, dropdown) {
             const data = await response.json();
 
             if (data.error) {
-                console.log("Error detail:", data); // ✅ lihat full response
+                console.log("Error detail:", data);
                 alert(data.error + "\n" + (data.detail || ""));
                 return;
             }
@@ -551,8 +550,8 @@ function loadForecastChart(trend, realtime) {
 
 function resetSearchInput() {
     document.getElementById("cityInput").value = "";
-    document.getElementById("suggestions").innerHTML = ""; // ✅ hilangkan suggest
-    activeIndex = -1; // ✅ reset navigasi keyboard
+    document.getElementById("suggestions").innerHTML = "";
+    activeIndex = -1;
 }
 
 // =======================================
