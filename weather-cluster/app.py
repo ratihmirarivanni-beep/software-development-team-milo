@@ -157,7 +157,7 @@ def get_forecast(city):
 @app.route("/predict", methods=["GET"])
 def predict_weather():
     city = request.args.get("city")
-    print(f"City diterima: '{city}'")  # ✅ tambah ini
+    print(f"City diterima: '{city}'")  
     if not city:
         return jsonify({"error": "City kosong"}), 400
 
@@ -186,7 +186,7 @@ def predict_weather():
         })
 
     except Exception as e:
-        print(f"Error predict: {e}")  # ✅ tambah ini juga
+        print(f"Error predict: {e}")  
         return jsonify({"error": "Gagal mengambil data cuaca", "detail": str(e)}), 500
 # ===========================================
 # ENDPOINT PREDIKSI MANUAL
